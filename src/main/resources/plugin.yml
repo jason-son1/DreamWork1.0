@@ -1,0 +1,35 @@
+name: DreamWorkCore
+version: '${project.version}'
+main: com.dreamwork.core.DreamWorkCore
+api-version: '1.21'
+prefix: DreamWork
+author: DreamWork Team
+description: 야생 + 타운 + 성장형 RPG 서버를 위한 핵심 플러그인
+
+# Soft Dependencies (없어도 플러그인 동작)
+softdepend:
+  - Vault
+  - PlaceholderAPI
+
+# 명령어 정의
+commands:
+  dreamwork:
+    description: DreamWork Core 메인 명령어
+    usage: /<command> [reload|help]
+    aliases: [dw]
+    permission: dreamwork.use
+
+# 퍼미션 정의
+permissions:
+  dreamwork.use:
+    description: DreamWork 기본 명령어 사용 권한
+    default: true
+  dreamwork.admin:
+    description: DreamWork 관리자 권한
+    default: op
+    children:
+      dreamwork.reload: true
+      dreamwork.use: true
+  dreamwork.reload:
+    description: 플러그인 설정 리로드 권한
+    default: op

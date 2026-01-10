@@ -1,0 +1,385 @@
+package com.dreamwork.core.stat;
+
+import com.dreamwork.core.DreamWorkCore;
+import com.dreamwork.core.manager.Manager;
+import org.bukkit.entity.Player;
+
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+
+/**
+ * 스탯 관리 매니저 (스켈레톤)
+ * 
+ * <p>
+ * 플레이어의 RPG 스탯을 관리합니다.
+ * DB 부하 최소화를 위해 메모리에 캐싱하고,
+ * 장비 교체나 레벨업 시에만 재계산합니다.
+ * </p>
+ * 
+ * <h2>스탯 종류:</h2>
+ * <ul>
+ * <li><b>STR (힘)</b>: 물리 공격력</li>
+ * <li><b>DEX (민첩)</b>: 치명타 확률, 이동 속도</li>
+ * <li><b>CON (체력)</b>: 최대 체력, 방어력</li>
+ * <li><b>INT (지능)</b>: 스킬 쿨타임, 마나</li>
+ * <li><b>LUCK (행운)</b>: 채집/드롭 보너스</li>
+ * </ul>
+ * 
+ * <h2>스탯 공식 (2단계에서 구현):</h2>
+ * <ul>
+ * <li>물리 데미지: {@code WeaponDamage + (STR * 0.5) + BaseDamage}</li>
+ * <li>치명타 확률: {@code 5 + (DEX * 0.2)} (%)</li>
+ * <li>최대 체력: {@code 20 + (CON * 2) + (JobLevel * 0.5)}</li>
+ * <li>방어력 감소: {@code CON / (CON + 100) * 100} (%)</li>
+ * <li>채집 보너스: {@code LUCK * 0.5} (%)</li>
+ * </ul>
+ * 
+ * @author DreamWork Team
+ * @since 1.0.0
+ */
+public class StatManager extends Manager {
+
+    private final DreamWorkCore plugin;
+
+    /** 플레이어별 스탯 캐시 */
+    private final Map<UUID, PlayerStats> statsCache;
+
+    /**
+     * StatManager 생성자
+     * 
+     * @param plugin 플러그인 인스턴스
+     */
+    public StatManager(DreamWorkCore plugin) {
+        this.plugin = plugin;
+        this.statsCache = new ConcurrentHashMap<>();
+    }
+
+    @Override
+    public void onEnable() {
+        enabled = true;
+        plugin.getLogger().info("StatManager 활성화 완료 (스켈레톤)");
+    }
+
+    @Override
+    public void onDisable() {
+        enabled = false;
+
+        // 모든 캐시된 스탯 저장
+        saveAllStats();
+        statsCache.clear();
+
+        plugin.getLogger().info("StatManager 비활성화 완료");
+    }
+
+    @Override
+    public void reload() {
+        // 설정 리로드 시 필요한 로직
+        plugin.getLogger().info("StatManager 리로드 완료");
+    }
+
+    /**
+     * 플레이어의 스탯을 로드합니다.
+     * 
+     * <p>
+     * 캐시에 없으면 파일에서 로드하고 캐싱합니다.
+     * </p>
+     * 
+     * @param player 플레이어
+     * @return 플레이어 스탯
+     */
+    public PlayerStats getStats(Player player) {
+        return getStats(player.getUniqueId());
+    }
+
+    /**
+     * UUID로 플레이어의 스탯을 로드합니다.
+     * 
+     * @param uuid 플레이어 UUID
+     * @return 플레이어 스탯
+     */
+    public PlayerStats getStats(UUID uuid) {
+        return statsCache.computeIfAbsent(uuid, this::loadOrCreateStats);
+    }
+
+    /**
+     * 스탯을 로드하거나 새로 생성합니다.
+     * 
+     * @param uuid 플레이어 UUID
+     * @return 플레이어 스탯
+     */
+    private PlayerStats loadOrCreateStats(UUID uuid) {
+        // TODO: 2단계에서 StorageManager와 연동하여 파일에서 로드
+        return new PlayerStats(uuid);
+    }
+
+    /**
+     * 플레이어의 스탯을 저장합니다.
+     * 
+     * @param uuid 플레이어 UUID
+     */
+    public void saveStats(UUID uuid) {
+        PlayerStats stats = statsCache.get(uuid);
+        if (stats != null) {
+            // TODO: 2단계에서 StorageManager와 연동하여 파일에 저장
+            plugin.getStorageManager().saveUserJsonAsync(uuid, stats);
+        }
+    }
+
+    /**
+     * 모든 캐시된 스탯을 저장합니다.
+     */
+    public void saveAllStats() {
+        for (UUID uuid : statsCache.keySet()) {
+            saveStats(uuid);
+        }
+        if (plugin.isDebugMode()) {
+            plugin.getLogger().info("[Debug] 모든 스탯 저장 완료: " + statsCache.size() + "명");
+        }
+    }
+
+    /**
+     * 플레이어의 스탯을 캐시에서 제거합니다.
+     * 
+     * <p>
+     * 플레이어 로그아웃 시 호출합니다.
+     * </p>
+     * 
+     * @param uuid 플레이어 UUID
+     */
+    public void unloadStats(UUID uuid) {
+        saveStats(uuid);
+        statsCache.remove(uuid);
+    }
+
+    /**
+     * 플레이어의 스탯을 재계산합니다.
+     * 
+     * <p>
+     * 장비 교체, 레벨업 시 호출합니다.
+     * </p>
+     * 
+     * @param player 플레이어
+     */
+    public void recalculateStats(Player player) {
+        PlayerStats stats = getStats(player);
+        // TODO: 2단계에서 장비 스탯, 직업 보너스 등 계산
+        stats.recalculate();
+    }
+
+    // ==================== 스탯 계산 공식 (2단계 구현용) ====================
+
+    /**
+     * 물리 데미지를 계산합니다.
+     * 
+     * @param player       플레이어
+     * @param weaponDamage 무기 기본 데미지
+     * @return 최종 물리 데미지
+     */
+    public double calculatePhysicalDamage(Player player, double weaponDamage) {
+        PlayerStats stats = getStats(player);
+        double baseDamage = 1.0;
+        return weaponDamage + (stats.getStr() * 0.5) + baseDamage;
+    }
+
+    /**
+     * 치명타 확률을 계산합니다.
+     * 
+     * @param player 플레이어
+     * @return 치명타 확률 (0~50%)
+     */
+    public double calculateCritChance(Player player) {
+        PlayerStats stats = getStats(player);
+        double chance = 5.0 + (stats.getDex() * 0.2);
+        return Math.min(chance, 50.0); // 최대 50%
+    }
+
+    /**
+     * 최대 체력을 계산합니다.
+     * 
+     * @param player   플레이어
+     * @param jobLevel 직업 레벨
+     * @return 최대 체력
+     */
+    public double calculateMaxHealth(Player player, int jobLevel) {
+        PlayerStats stats = getStats(player);
+        return 20.0 + (stats.getCon() * 2) + (jobLevel * 0.5);
+    }
+
+    /**
+     * 데미지 감소율을 계산합니다.
+     * 
+     * @param player 플레이어
+     * @return 데미지 감소율 (0~100%)
+     */
+    public double calculateDamageReduction(Player player) {
+        PlayerStats stats = getStats(player);
+        int con = stats.getCon();
+        return ((double) con / (con + 100)) * 100;
+    }
+
+    /**
+     * 채집 보너스 확률을 계산합니다.
+     * 
+     * @param player 플레이어
+     * @return 보너스 확률 (%)
+     */
+    public double calculateDropBonus(Player player) {
+        PlayerStats stats = getStats(player);
+        return stats.getLuck() * 0.5;
+    }
+
+    // ==================== 내부 클래스: PlayerStats ====================
+
+    /**
+     * 플레이어 스탯 데이터 클래스
+     */
+    public static class PlayerStats {
+
+        private final UUID uuid;
+
+        /** 기본 스탯 */
+        private int str; // 힘
+        private int dex; // 민첩
+        private int con; // 체력
+        private int intelligence; // 지능 (int는 예약어)
+        private int luck; // 행운
+
+        /** 남은 스탯 포인트 */
+        private int statPoints;
+
+        /** 보너스 스탯 (장비, 버프 등) */
+        private transient int bonusStr;
+        private transient int bonusDex;
+        private transient int bonusCon;
+        private transient int bonusInt;
+        private transient int bonusLuck;
+
+        /**
+         * PlayerStats 생성자 (기본 스탯)
+         * 
+         * @param uuid 플레이어 UUID
+         */
+        public PlayerStats(UUID uuid) {
+            this.uuid = uuid;
+            this.str = 0;
+            this.dex = 0;
+            this.con = 0;
+            this.intelligence = 0;
+            this.luck = 0;
+            this.statPoints = 0;
+        }
+
+        /**
+         * 스탯을 재계산합니다.
+         * 
+         * <p>
+         * 장비와 버프 스탯을 합산합니다.
+         * </p>
+         */
+        public void recalculate() {
+            // TODO: 2단계에서 장비 Lore 파싱, 버프 효과 계산
+        }
+
+        // Getters (총합 = 기본 + 보너스)
+        public int getStr() {
+            return str + bonusStr;
+        }
+
+        public int getDex() {
+            return dex + bonusDex;
+        }
+
+        public int getCon() {
+            return con + bonusCon;
+        }
+
+        public int getInt() {
+            return intelligence + bonusInt;
+        }
+
+        public int getLuck() {
+            return luck + bonusLuck;
+        }
+
+        // Base Getters
+        public int getBaseStr() {
+            return str;
+        }
+
+        public int getBaseDex() {
+            return dex;
+        }
+
+        public int getBaseCon() {
+            return con;
+        }
+
+        public int getBaseInt() {
+            return intelligence;
+        }
+
+        public int getBaseLuck() {
+            return luck;
+        }
+
+        // Setters (기본 스탯만)
+        public void setStr(int str) {
+            this.str = str;
+        }
+
+        public void setDex(int dex) {
+            this.dex = dex;
+        }
+
+        public void setCon(int con) {
+            this.con = con;
+        }
+
+        public void setInt(int intelligence) {
+            this.intelligence = intelligence;
+        }
+
+        public void setLuck(int luck) {
+            this.luck = luck;
+        }
+
+        // Stat Points
+        public int getStatPoints() {
+            return statPoints;
+        }
+
+        public void setStatPoints(int points) {
+            this.statPoints = points;
+        }
+
+        public void addStatPoints(int points) {
+            this.statPoints += points;
+        }
+
+        // Bonus Setters (장비/버프용)
+        public void setBonusStr(int bonus) {
+            this.bonusStr = bonus;
+        }
+
+        public void setBonusDex(int bonus) {
+            this.bonusDex = bonus;
+        }
+
+        public void setBonusCon(int bonus) {
+            this.bonusCon = bonus;
+        }
+
+        public void setBonusInt(int bonus) {
+            this.bonusInt = bonus;
+        }
+
+        public void setBonusLuck(int bonus) {
+            this.bonusLuck = bonus;
+        }
+
+        public UUID getUuid() {
+            return uuid;
+        }
+    }
+}
