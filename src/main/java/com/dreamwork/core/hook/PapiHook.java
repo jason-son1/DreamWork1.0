@@ -1,6 +1,10 @@
 package com.dreamwork.core.hook;
 
 import com.dreamwork.core.DreamWorkCore;
+import com.dreamwork.core.job.JobManager;
+import com.dreamwork.core.job.JobProvider;
+import com.dreamwork.core.job.UserJobData;
+import com.dreamwork.core.stat.StatManager;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
@@ -50,12 +54,12 @@ public class PapiHook extends PlaceholderExpansion {
 
     @Override
     public @NotNull String getAuthor() {
-        return String.join(", ", plugin.getDescription().getAuthors());
+        return String.join(", ", plugin.getPluginMeta().getAuthors());
     }
 
     @Override
     public @NotNull String getVersion() {
-        return plugin.getDescription().getVersion();
+        return plugin.getPluginMeta().getVersion();
     }
 
     @Override
@@ -129,8 +133,8 @@ public class PapiHook extends PlaceholderExpansion {
      * @return placeholder 값
      */
     private String handleOfflineRequest(OfflinePlayer player, String params) {
-        // TODO: 2단계에서 파일에서 데이터 로드
-        return "0"; // 기본값
+        // 오프라인 플레이어는 기본값 반환
+        return "0";
     }
 
     /**
@@ -140,8 +144,16 @@ public class PapiHook extends PlaceholderExpansion {
      * @return 직업 이름
      */
     private String getPlayerJob(Player player) {
-        // TODO: 2단계에서 JobManager와 연동
-        return "없음";
+        JobManager jobManager = plugin.getJobManager();
+        if (jobManager == null)
+            return "없음";
+
+        UserJobData data = jobManager.getUserJob(player.getUniqueId());
+        if (!data.hasJob())
+            return "없음";
+
+        JobProvider job = jobManager.getJob(data.getJobId());
+        return job != null ? job.getDisplayName() : data.getJobId();
     }
 
     /**
@@ -151,8 +163,12 @@ public class PapiHook extends PlaceholderExpansion {
      * @return 레벨
      */
     private String getPlayerLevel(Player player) {
-        // TODO: 2단계에서 JobManager와 연동
-        return "1";
+        JobManager jobManager = plugin.getJobManager();
+        if (jobManager == null)
+            return "0";
+
+        UserJobData data = jobManager.getUserJob(player.getUniqueId());
+        return String.valueOf(data.getLevel());
     }
 
     /**
@@ -162,8 +178,12 @@ public class PapiHook extends PlaceholderExpansion {
      * @return 경험치
      */
     private String getPlayerExp(Player player) {
-        // TODO: 2단계에서 JobManager와 연동
-        return "0";
+        JobManager jobManager = plugin.getJobManager();
+        if (jobManager == null)
+            return "0";
+
+        UserJobData data = jobManager.getUserJob(player.getUniqueId());
+        return String.format("%.0f", data.getCurrentExp());
     }
 
     /**
@@ -173,8 +193,21 @@ public class PapiHook extends PlaceholderExpansion {
      * @return 경험치 퍼센트 (0~100)
      */
     private String getPlayerExpPercent(Player player) {
-        // TODO: 2단계에서 JobManager와 연동
-        return "0.0";
+        JobManager jobManager = plugin.getJobManager();
+        if (jobManager == null)
+            return "0.0";
+
+        UserJobData data = jobManager.getUserJob(player.getUniqueId());
+        if (!data.hasJob())
+            return "0.0";
+
+        JobProvider job = jobManager.getJob(data.getJobId());
+        if (job == null)
+            return "0.0";
+
+        double required = job.getExpForLevel(data.getLevel() + 1);
+        double percent = (data.getCurrentExp() / required) * 100;
+        return String.format("%.1f", Math.min(percent, 100.0));
     }
 
     /**
@@ -185,8 +218,19 @@ public class PapiHook extends PlaceholderExpansion {
      * @return 스탯 값
      */
     private String getPlayerStat(Player player, String statName) {
-        // TODO: 2단계에서 StatManager와 연동
-        return "0";
+        StatManager statManager = plugin.getStatManager();
+        if (statManager == null)
+            return "0";
+
+        StatManager.PlayerStats stats = statManager.getStats(player);
+        return switch (statName.toLowerCase()) {
+            case "str" -> String.valueOf(stats.getStr());
+            case "dex" -> String.valueOf(stats.getDex());
+            case "con" -> String.valueOf(stats.getCon());
+            case "int" -> String.valueOf(stats.getInt());
+            case "luck" -> String.valueOf(stats.getLuck());
+            default -> "0";
+        };
     }
 
     /**
@@ -196,7 +240,11 @@ public class PapiHook extends PlaceholderExpansion {
      * @return 스탯 포인트
      */
     private String getPlayerStatPoints(Player player) {
-        // TODO: 2단계에서 StatManager와 연동
-        return "0";
+        StatManager statManager = plugin.getStatManager();
+        if (statManager == null)
+            return "0";
+
+        StatManager.PlayerStats stats = statManager.getStats(player);
+        return String.valueOf(stats.getStatPoints());
     }
 }

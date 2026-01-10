@@ -1,7 +1,11 @@
 package com.dreamwork.core.stat;
 
 import com.dreamwork.core.DreamWorkCore;
+import com.dreamwork.core.job.JobManager;
+import com.dreamwork.core.job.JobProvider;
+import com.dreamwork.core.job.UserJobData;
 import com.dreamwork.core.manager.Manager;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Player;
 
 import java.util.Map;
@@ -153,18 +157,100 @@ public class StatManager extends Manager {
     }
 
     /**
+     * 플레이어의 스탯 데이터를 설정합니다.
+     * 
+     * @param uuid  플레이어 UUID
+     * @param stats 스탯 데이터
+     */
+    public void setStats(UUID uuid, PlayerStats stats) {
+        if (stats != null) {
+            statsCache.put(uuid, stats);
+        }
+    }
+
+    /**
      * 플레이어의 스탯을 재계산합니다.
      * 
      * <p>
      * 장비 교체, 레벨업 시 호출합니다.
+     * 기본 스탯 + (직업 레벨 × 직업 스탯 보너스)를 계산합니다.
      * </p>
      * 
      * @param player 플레이어
      */
     public void recalculateStats(Player player) {
-        PlayerStats stats = getStats(player);
-        // TODO: 2단계에서 장비 스탯, 직업 보너스 등 계산
+        UUID uuid = player.getUniqueId();
+        PlayerStats stats = getStats(uuid);
+
+        // 보너스 스탯 초기화
+        stats.setBonusStr(0);
+        stats.setBonusDex(0);
+        stats.setBonusCon(0);
+        stats.setBonusInt(0);
+        stats.setBonusLuck(0);
+
+        // 직업 레벨에 따른 스탯 보너스 계산
+        JobManager jobManager = plugin.getJobManager();
+        if (jobManager != null) {
+            UserJobData jobData = jobManager.getUserJob(uuid);
+            if (jobData != null && jobData.hasJob()) {
+                JobProvider job = jobManager.getJob(jobData.getJobId());
+                if (job != null) {
+                    int jobLevel = jobData.getLevel();
+                    Map<String, Double> statsPerLevel = job.getStatsPerLevel();
+
+                    // 각 스탯 보너스 적용
+                    for (Map.Entry<String, Double> entry : statsPerLevel.entrySet()) {
+                        String statName = entry.getKey().toLowerCase();
+                        int bonus = (int) (entry.getValue() * jobLevel);
+
+                        switch (statName) {
+                            case "str", "strength" -> stats.setBonusStr(stats.getBonusStr() + bonus);
+                            case "dex", "dexterity" -> stats.setBonusDex(stats.getBonusDex() + bonus);
+                            case "con", "constitution", "stamina" -> stats.setBonusCon(stats.getBonusCon() + bonus);
+                            case "int", "intelligence" -> stats.setBonusInt(stats.getBonusInt() + bonus);
+                            case "luck", "luk" -> stats.setBonusLuck(stats.getBonusLuck() + bonus);
+                        }
+                    }
+                }
+            }
+        }
+
+        // 스탯 내부 재계산 (장비 등)
         stats.recalculate();
+
+        // 바닐라 속성 적용 (최대 체력 등)
+        applyVanillaAttributes(player, stats);
+
+        if (plugin.isDebugMode()) {
+            plugin.getLogger().info("[Debug] 스탯 재계산: " + player.getName() +
+                    " (STR:" + stats.getStr() +
+                    ", DEX:" + stats.getDex() +
+                    ", CON:" + stats.getCon() +
+                    ", INT:" + stats.getInt() +
+                    ", LUCK:" + stats.getLuck() + ")");
+        }
+    }
+
+    /**
+     * 바닐라 마인크래프트 속성을 적용합니다.
+     * 
+     * @param player 플레이어
+     * @param stats  스탯
+     */
+    private void applyVanillaAttributes(Player player, PlayerStats stats) {
+        // 최대 체력 적용 (기본 20 + CON * 2)
+        double maxHealth = 20.0 + (stats.getCon() * 2);
+        maxHealth = Math.min(maxHealth, 100.0); // 최대 100
+
+        try {
+            var healthAttr = player.getAttribute(Attribute.GENERIC_MAX_HEALTH);
+            if (healthAttr != null) {
+                healthAttr.setBaseValue(maxHealth);
+            }
+        } catch (Exception e) {
+            // 속성 설정 실패 시 무시
+        }
     }
 
     // ==================== 스탯 계산 공식 (2단계 구현용) ====================
@@ -355,6 +441,27 @@ public class StatManager extends Manager {
 
         public void addStatPoints(int points) {
             this.statPoints += points;
+        }
+
+        // Bonus Getters
+        public int getBonusStr() {
+            return bonusStr;
+        }
+
+        public int getBonusDex() {
+            return bonusDex;
+        }
+
+        public int getBonusCon() {
+            return bonusCon;
+        }
+
+        public int getBonusInt() {
+            return bonusInt;
+        }
+
+        public int getBonusLuck() {
+            return bonusLuck;
         }
 
         // Bonus Setters (장비/버프용)

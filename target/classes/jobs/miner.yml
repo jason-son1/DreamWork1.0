@@ -1,0 +1,114 @@
+# ================================================================
+# 광부 (Miner) 직업 설정 파일
+# DreamWork Core - 직업 시스템
+# ================================================================
+
+# 직업 고유 ID (소문자)
+id: miner
+
+# 표시 이름
+display: "광부"
+
+# 직업 설명
+description: "광물을 채굴하여 경험치를 획득하는 직업입니다."
+
+# GUI 아이콘 (Material 이름)
+icon: IRON_PICKAXE
+
+# 최대 레벨
+max_level: 100
+
+# 경험치 공식: base * level^exponent
+# 예: 레벨 10에 필요한 경험치 = 100 * 10^1.5 ≈ 3162
+exp_formula:
+  base: 100
+  exponent: 1.5
+
+# 경험치 소스 (행동별 경험치 획득량)
+exp_sources:
+  # 블럭 파괴 시 획득 경험치
+  block_break:
+    # 일반 광물
+    STONE: 0.5
+    COBBLESTONE: 0.3
+    DEEPSLATE: 0.8
+    
+    # 석탄
+    COAL_ORE: 3
+    DEEPSLATE_COAL_ORE: 4
+    
+    # 철
+    IRON_ORE: 8
+    DEEPSLATE_IRON_ORE: 10
+    
+    # 구리
+    COPPER_ORE: 5
+    DEEPSLATE_COPPER_ORE: 6
+    
+    # 금
+    GOLD_ORE: 15
+    DEEPSLATE_GOLD_ORE: 18
+    NETHER_GOLD_ORE: 12
+    
+    # 에메랄드
+    EMERALD_ORE: 40
+    DEEPSLATE_EMERALD_ORE: 50
+    
+    # 다이아몬드
+    DIAMOND_ORE: 50
+    DEEPSLATE_DIAMOND_ORE: 60
+    
+    # 레드스톤 & 라피스
+    REDSTONE_ORE: 8
+    DEEPSLATE_REDSTONE_ORE: 10
+    LAPIS_ORE: 10
+    DEEPSLATE_LAPIS_ORE: 12
+    
+    # 네더라이트 (고급)
+    ANCIENT_DEBRIS: 100
+
+# 레벨당 스탯 증가량
+stats_per_level:
+  # 힘: 레벨당 +1
+  str: 1
+  # 체력: 레벨당 +0.5
+  con: 0.5
+
+# 레벨별 보상
+rewards:
+  # 레벨 10 달성 보상
+  10:
+    message: "&a[광부] &f10레벨 달성! &6철 곡괭이&f를 획득했습니다."
+    commands:
+      - "give %player% iron_pickaxe 1"
+      - "give %player% torch 32"
+  
+  # 레벨 25 달성 보상
+  25:
+    message: "&a[광부] &f25레벨 달성! &b야간 투시 포션&f을 획득했습니다."
+    commands:
+      - "give %player% potion{Potion:night_vision} 3"
+      - "give %player% diamond 3"
+  
+  # 레벨 50 달성 보상
+  50:
+    message: "&a[광부] &f50레벨 달성! &6다이아몬드 곡괭이&f와 특별 보상을 획득했습니다."
+    commands:
+      - "give %player% diamond_pickaxe 1"
+      - "give %player% diamond 10"
+      - "eco give %player% 10000"
+  
+  # 레벨 75 달성 보상
+  75:
+    message: "&a[광부] &f75레벨 달성! &d인챈트된 다이아 곡괭이&f를 획득했습니다."
+    commands:
+      - "give %player% diamond_pickaxe{Enchantments:[{id:efficiency,lvl:3},{id:fortune,lvl:2}]} 1"
+      - "eco give %player% 25000"
+  
+  # 레벨 100 달성 (마스터)
+  100:
+    message: "&6&l[광부 마스터] &f축하합니다! 광부 직업을 마스터했습니다!"
+    commands:
+      - "give %player% netherite_pickaxe{Enchantments:[{id:efficiency,lvl:5},{id:fortune,lvl:3}]} 1"
+      - "eco give %player% 100000"
+      - "lp user %player% parent add master_miner"
