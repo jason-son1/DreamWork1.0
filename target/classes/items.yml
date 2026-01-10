@@ -1,0 +1,88 @@
+# ================================================================
+# DreamWork Core 커스텀 아이템 설정
+# ================================================================
+
+# 예시: 초보자의 검
+starter_sword:
+  material: IRON_SWORD
+  name: "&f초보자의 검"
+  lore:
+    - "&7모험의 첫 걸음을 위한 검"
+    - ""
+    - "&e[DreamWork 아이템]"
+  stats:
+    str: 5
+    dex: 2
+  enchants:
+    sharpness: 1
+
+# 예시: 광부의 곡괭이
+miner_pickaxe:
+  material: IRON_PICKAXE
+  name: "&6광부의 곡괭이"
+  lore:
+    - "&7광물을 효율적으로 캐는 곡괭이"
+    - "&7자동 제련 확률 증가"
+    - ""
+    - "&e[DreamWork 아이템]"
+  stats:
+    int: 10
+    luck: 5
+  enchants:
+    efficiency: 3
+    fortune: 2
+
+# 예시: 행운의 반지
+lucky_ring:
+  material: GOLD_NUGGET
+  name: "&a행운의 반지"
+  lore:
+    - "&7착용자에게 행운을 가져다주는 반지"
+    - ""
+    - "&e[DreamWork 아이템]"
+  stats:
+    luck: 15
+    crit: 3
+
+# 예시: 전사의 투구
+warrior_helmet:
+  material: IRON_HELMET
+  name: "&c전사의 투구"
+  lore:
+    - "&7전투에 강한 투구"
+    - ""
+    - "&e[DreamWork 아이템]"
+  stats:
+    str: 8
+    con: 10
+    def: 5
+  enchants:
+    protection: 2
+
+# 예시: 마법사의 로브
+mage_chestplate:
+  material: LEATHER_CHESTPLATE
+  name: "&d마법사의 로브"
+  lore:
+    - "&7마력이 깃든 로브"
+    - ""
+    - "&e[DreamWork 아이템]"
+  stats:
+    int: 20
+    con: 5
+
+# 예시: 암살자의 단검
+assassin_dagger:
+  material: GOLDEN_SWORD
+  name: "&8암살자의 단검"
+  lore:
+    - "&7빠르고 치명적인 공격을 가능하게 하는 단검"
+    - ""
+    - "&e[DreamWork 아이템]"
+  stats:
+    dex: 15
+    crit: 10
+    str: 3
+  enchants:
+    sharpness: 2
+    sweeping: 1

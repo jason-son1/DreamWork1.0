@@ -408,6 +408,13 @@ public class JobManager extends Manager {
         return expCalculator.getRequiredExp(level);
     }
 
+    /**
+     * 필요 경험치를 반환합니다. (PlaceholderAPI용 래퍼)
+     */
+    public double getRequiredExp(int level) {
+        return calculateRequiredExp(level);
+    }
+
     // ==================== 엔진 컴포넌트 Getters ====================
 
     public TriggerManager getTriggerManager() {

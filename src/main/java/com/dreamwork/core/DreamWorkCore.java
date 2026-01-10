@@ -10,9 +10,12 @@ import com.dreamwork.core.stat.StatManager;
 import com.dreamwork.core.storage.StorageManager;
 import com.dreamwork.core.task.AutoSaveTask;
 import com.dreamwork.core.gui.SmartInventory;
-import com.dreamwork.core.gui.SmartInventory;
 import com.dreamwork.core.gui.provider.JobSelectionProvider;
 import com.dreamwork.core.gui.provider.StatProfileProvider;
+import com.dreamwork.core.hook.DreamWorkExpansion;
+import com.dreamwork.core.item.ItemFactory;
+import com.dreamwork.core.quest.QuestUI;
+import com.dreamwork.core.skill.SkillManager;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.command.Command;
@@ -60,6 +63,12 @@ public final class DreamWorkCore extends JavaPlugin {
 
     /** 장비 스캐너 */
     private InventoryScanner inventoryScanner;
+
+    /** 스킬 매니저 */
+    private SkillManager skillManager;
+
+    /** 아이템 팩토리 */
+    private ItemFactory itemFactory;
 
     /**
      * 플러그인 인스턴스를 반환합니다.
@@ -151,6 +160,13 @@ public final class DreamWorkCore extends JavaPlugin {
 
         // 장비 스캐너 (리스너로도 동작)
         inventoryScanner = new InventoryScanner(this);
+
+        // 스킬 매니저
+        skillManager = new SkillManager(this);
+        registerManager(skillManager);
+
+        // 아이템 팩토리
+        itemFactory = new ItemFactory(this);
 
         getLogger().info(managers.size() + "개의 매니저가 초기화되었습니다.");
     }
@@ -301,6 +317,53 @@ public final class DreamWorkCore extends JavaPlugin {
                             .build()
                             .open(player);
                 }
+                case "quest" -> {
+                    if (!(sender instanceof org.bukkit.entity.Player player)) {
+                        sendMessage(sender, "&c플레이어만 사용할 수 있습니다.");
+                        return true;
+                    }
+                    SmartInventory.builder()
+                            .title("퀸스트")
+                            .size(27)
+                            .provider(new QuestUI(player, this))
+                            .build()
+                            .open(player);
+                }
+                case "skill" -> {
+                    if (!(sender instanceof org.bukkit.entity.Player player)) {
+                        sendMessage(sender, "&c플레이어만 사용할 수 있습니다.");
+                        return true;
+                    }
+                    if (args.length < 2) {
+                        sendMessage(sender, "&c사용법: /dw skill <스킬명>");
+                        return true;
+                    }
+                    skillManager.triggerSkill(player, args[1]);
+                }
+                case "give" -> {
+                    if (!sender.hasPermission("dreamwork.give")) {
+                        sendMessage(sender, getMessage("no-permission"));
+                        return true;
+                    }
+                    if (args.length < 3) {
+                        sendMessage(sender, "&c사용법: /dw give <플레이어> <아이템명> [수량]");
+                        return true;
+                    }
+                    org.bukkit.entity.Player target = org.bukkit.Bukkit.getPlayer(args[1]);
+                    if (target == null) {
+                        sendMessage(sender, "&c플레이어를 찾을 수 없습니다.");
+                        return true;
+                    }
+                    String itemId = args[2];
+                    int amount = args.length >= 4 ? Integer.parseInt(args[3]) : 1;
+                    org.bukkit.inventory.ItemStack item = itemFactory.createItem(itemId, amount);
+                    if (item == null) {
+                        sendMessage(sender, "&c아이템을 찾을 수 없습니다: " + itemId);
+                        return true;
+                    }
+                    target.getInventory().addItem(item);
+                    sendMessage(sender, "&a" + target.getName() + "에게 " + itemId + " x" + amount + " 지급!");
+                }
                 default -> sendMessage(sender, getMessage("unknown-command"));
             }
             return true;
@@ -383,5 +446,23 @@ public final class DreamWorkCore extends JavaPlugin {
      */
     public QuestManager getQuestManager() {
         return questManager;
+    }
+
+    /**
+     * 스킬 매니저를 반환합니다.
+     * 
+     * @return SkillManager 인스턴스
+     */
+    public SkillManager getSkillManager() {
+        return skillManager;
+    }
+
+    /**
+     * 아이템 팩토리를 반환합니다.
+     * 
+     * @return ItemFactory 인스턴스
+     */
+    public ItemFactory getItemFactory() {
+        return itemFactory;
     }
 }

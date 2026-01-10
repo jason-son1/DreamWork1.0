@@ -3,95 +3,122 @@ package com.dreamwork.core.listener;
 import com.dreamwork.core.DreamWorkCore;
 import com.dreamwork.core.stat.StatManager;
 import com.dreamwork.core.stat.StatManager.PlayerStats;
+import com.dreamwork.core.stat.mechanic.GatheringMechanic;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.player.PlayerItemDamageEvent;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.Collection;
-import java.util.Random;
 
 /**
- * 스탯 효과 리스너
+ * 스탯 효과 리스너 (GatheringMechanic 통합 버전)
  * 
  * <p>
- * 스탯이 실제 게임 플레이에 영향을 주도록 처리합니다.
- * - STR: 물리 데미지 증가
- * - DEX: 채집 시 추가 드롭 확률
- * - (이동 속도는 StatManager에서 Attribute로 처리)
+ * 채집 관련 스탯 효과를 적용합니다.
  * </p>
+ * <ul>
+ * <li>더블 드롭 (LUCK)</li>
+ * <li>자동 제련 (INT)</li>
+ * <li>내구도 보호 (DEX)</li>
+ * </ul>
  */
 public class StatEffectListener implements Listener {
 
     private final DreamWorkCore plugin;
     private final StatManager statManager;
-    private final Random random = new Random();
+    private final GatheringMechanic gatheringMechanic;
 
     public StatEffectListener(DreamWorkCore plugin) {
         this.plugin = plugin;
         this.statManager = plugin.getStatManager();
+        this.gatheringMechanic = new GatheringMechanic(plugin);
     }
 
     /**
-     * 물리 데미지 증가 (STR)
+     * 블록 파괴 시 채집 효과 적용
      */
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
-    public void onPlayerDamage(EntityDamageByEntityEvent event) {
-        Player attacker = null;
-
-        if (event.getDamager() instanceof Player p) {
-            attacker = p;
-        } else if (event.getDamager() instanceof Projectile proj && proj.getShooter() instanceof Player p) {
-            attacker = p;
-        }
-
-        if (attacker == null)
-            return;
-
-        PlayerStats stats = statManager.getStats(attacker);
-        int str = stats.getStr();
-
-        // 데미지 공식: 기본 + (STR * 0.5)
-        double bonusDamage = str * 0.5;
-
-        if (bonusDamage > 0) {
-            event.setDamage(event.getDamage() + bonusDamage);
-
-            if (plugin.isDebugMode()) {
-                // 디버그 로깅
-            }
-        }
-    }
-
-    /**
-     * 추가 드롭 (DEX)
-     */
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBlockBreak(BlockBreakEvent event) {
         Player player = event.getPlayer();
-        PlayerStats stats = statManager.getStats(player);
-        int dex = stats.getDex();
 
-        // DEX 1당 0.1% 확률로 추가 드롭 (최대 50%)
-        double chance = dex * 0.1;
-        if (chance > 50.0)
-            chance = 50.0;
+        // 자동 제련 체크
+        if (gatheringMechanic.shouldAutoSmelt(player)) {
+            applyAutoSmelt(event, player);
+        }
 
-        if (random.nextDouble() * 100 < chance) {
-            // 추가 드롭 발생
+        // 더블 드롭 체크
+        if (gatheringMechanic.shouldDoubleDrop(player)) {
+            applyDoubleDrop(event, player);
+        }
+    }
+
+    /**
+     * 자동 제련 적용
+     */
+    private void applyAutoSmelt(BlockBreakEvent event, Player player) {
+        Material blockType = event.getBlock().getType();
+        Material smelted = gatheringMechanic.getSmeltResult(blockType);
+
+        if (smelted != null) {
+            // 드롭 아이템 교체
+            event.setDropItems(false);
+
             Collection<ItemStack> drops = event.getBlock().getDrops(player.getInventory().getItemInMainHand());
-            for (ItemStack item : drops) {
-                if (item.getType() != Material.AIR) {
-                    event.getBlock().getWorld().dropItemNaturally(event.getBlock().getLocation(), item);
-                }
+            for (ItemStack drop : drops) {
+                ItemStack smeltedItem = gatheringMechanic.smeltItem(drop);
+                event.getBlock().getWorld().dropItemNaturally(
+                        event.getBlock().getLocation(), smeltedItem);
             }
 
-            // 효과음재생 등 가능
+            if (plugin.isDebugMode()) {
+                plugin.getLogger().info("[Gathering] " + player.getName() + " 자동 제련 발동!");
+            }
         }
+    }
+
+    /**
+     * 더블 드롭 적용
+     */
+    private void applyDoubleDrop(BlockBreakEvent event, Player player) {
+        Collection<ItemStack> drops = event.getBlock().getDrops(player.getInventory().getItemInMainHand());
+
+        for (ItemStack drop : drops) {
+            if (drop.getType() != Material.AIR) {
+                event.getBlock().getWorld().dropItemNaturally(
+                        event.getBlock().getLocation(), drop.clone());
+            }
+        }
+
+        if (plugin.isDebugMode()) {
+            plugin.getLogger().info("[Gathering] " + player.getName() + " 더블 드롭 발동!");
+        }
+    }
+
+    /**
+     * 내구도 손실 방지
+     */
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onItemDamage(PlayerItemDamageEvent event) {
+        Player player = event.getPlayer();
+
+        if (gatheringMechanic.preventDurabilityLoss(player)) {
+            event.setCancelled(true);
+
+            if (plugin.isDebugMode()) {
+                plugin.getLogger().info("[Gathering] " + player.getName() + " 내구도 보호 발동!");
+            }
+        }
+    }
+
+    /**
+     * GatheringMechanic 인스턴스를 반환합니다.
+     */
+    public GatheringMechanic getGatheringMechanic() {
+        return gatheringMechanic;
     }
 }
