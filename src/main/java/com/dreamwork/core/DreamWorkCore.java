@@ -2,11 +2,14 @@ package com.dreamwork.core;
 
 import com.dreamwork.core.hook.HookManager;
 import com.dreamwork.core.job.JobManager;
+import com.dreamwork.core.listener.GuiListener;
 import com.dreamwork.core.listener.JobActivityListener;
 import com.dreamwork.core.listener.PlayerDataListener;
+import com.dreamwork.core.listener.StatEffectListener;
 import com.dreamwork.core.manager.Manager;
 import com.dreamwork.core.stat.StatManager;
 import com.dreamwork.core.storage.StorageManager;
+import com.dreamwork.core.task.AutoSaveTask;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.command.Command;
@@ -81,6 +84,9 @@ public final class DreamWorkCore extends JavaPlugin {
 
         // 이벤트 리스너 등록
         registerListeners();
+
+        // 자동 저장 태스크 시작 (5분마다)
+        new AutoSaveTask(this).runTaskTimer(this, 6000L, 6000L);
 
         long endTime = System.currentTimeMillis();
         getLogger()
@@ -167,8 +173,14 @@ public final class DreamWorkCore extends JavaPlugin {
         // 직업 활동 이벤트 리스너
         getServer().getPluginManager().registerEvents(new JobActivityListener(this), this);
 
+        // 스탯 효과 리스너
+        getServer().getPluginManager().registerEvents(new StatEffectListener(this), this);
+
+        // GUI 리스너
+        getServer().getPluginManager().registerEvents(new GuiListener(), this);
+
         if (isDebugMode()) {
-            getLogger().info("[Debug] 이벤트 리스너 2개 등록 완료");
+            getLogger().info("[Debug] 이벤트 리스너 4개 등록 완료");
         }
     }
 
@@ -229,8 +241,23 @@ public final class DreamWorkCore extends JavaPlugin {
                 }
                 case "help" -> {
                     sendMessage(sender, "&6=== DreamWork Core 도움말 ===");
+                    sendMessage(sender, "&e/dw job &7- 직업 선택 창 열기");
+                    sendMessage(sender, "&e/dw stat &7- 스탯 프로필 열기");
                     sendMessage(sender, "&e/dw reload &7- 설정 리로드");
-                    sendMessage(sender, "&e/dw help &7- 도움말 표시");
+                }
+                case "job" -> {
+                    if (!(sender instanceof org.bukkit.entity.Player player)) {
+                        sendMessage(sender, "&c플레이어만 사용할 수 있습니다.");
+                        return true;
+                    }
+                    new com.dreamwork.core.gui.JobSelectionUI(this, player).open();
+                }
+                case "stat" -> {
+                    if (!(sender instanceof org.bukkit.entity.Player player)) {
+                        sendMessage(sender, "&c플레이어만 사용할 수 있습니다.");
+                        return true;
+                    }
+                    new com.dreamwork.core.gui.StatProfileUI(this, player).open();
                 }
                 default -> sendMessage(sender, getMessage("unknown-command"));
             }

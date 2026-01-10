@@ -17,6 +17,9 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 
+import com.dreamwork.core.job.engine.*;
+import com.dreamwork.core.job.event.JobLevelUpEvent;
+
 /**
  * 직업 엔진 컨트롤러
  * 
@@ -44,9 +47,13 @@ public class JobManager extends Manager {
     /** 경험치 배율 */
     private double expMultiplier = 1.0;
 
-    /** 레벨업 공식 기본값 (base * level^exponent) */
-    private double expBase = 100;
-    private double expExponent = 1.5;
+    /** 경험치 계산기 */
+    private ExpCalculator expCalculator;
+
+    // 직업 엔진 컴포넌트
+    private TriggerManager triggerManager;
+    private JobValidator jobValidator;
+    private RewardProcessor rewardProcessor;
 
     /**
      * JobManager 생성자
@@ -57,6 +64,11 @@ public class JobManager extends Manager {
         this.plugin = plugin;
         this.jobs = new ConcurrentHashMap<>();
         this.userJobs = new ConcurrentHashMap<>();
+
+        // 엔진 컴포넌트 초기화
+        this.triggerManager = new TriggerManager();
+        this.jobValidator = new JobValidator();
+        this.rewardProcessor = new RewardProcessor(this);
     }
 
     @Override
@@ -104,6 +116,9 @@ public class JobManager extends Manager {
     private void loadConfig() {
         FileConfiguration config = plugin.getConfig();
         expMultiplier = config.getDouble("jobs.exp-multiplier", 1.0);
+
+        String formula = config.getString("exp-formula", "100 + (level * 25) + (level^2 * 5)");
+        this.expCalculator = new ExpCalculator(formula);
     }
 
     /**
@@ -340,7 +355,7 @@ public class JobManager extends Manager {
         int maxLevel = job.getMaxLevel();
 
         while (data.getLevel() < maxLevel) {
-            double requiredExp = job.getExpForLevel(data.getLevel() + 1);
+            double requiredExp = calculateRequiredExp(data.getLevel() + 1);
 
             if (data.getCurrentExp() < requiredExp) {
                 break; // 경험치 부족
@@ -351,7 +366,11 @@ public class JobManager extends Manager {
             data.levelUp(requiredExp);
             int newLevel = data.getLevel();
 
-            // 레벨업 콜백
+            // 커스텀 이벤트 호출
+            JobLevelUpEvent event = new JobLevelUpEvent(player, job.getId(), oldLevel, newLevel);
+            Bukkit.getPluginManager().callEvent(event);
+
+            // 레벨업 콜백 (JobProvider)
             job.onLevelUp(player, oldLevel, newLevel);
 
             // 스탯 재계산
@@ -385,18 +404,22 @@ public class JobManager extends Manager {
         player.playSound(player.getLocation(), Sound.UI_TOAST_CHALLENGE_COMPLETE, 0.5f, 1.2f);
     }
 
-    /**
-     * 특정 레벨에 필요한 경험치를 계산합니다.
-     * 
-     * <p>
-     * 기본 공식: base * level^exponent
-     * </p>
-     * 
-     * @param level 목표 레벨
-     * @return 필요 경험치
-     */
     public double calculateRequiredExp(int level) {
-        return expBase * Math.pow(level, expExponent);
+        return expCalculator.getRequiredExp(level);
+    }
+
+    // ==================== 엔진 컴포넌트 Getters ====================
+
+    public TriggerManager getTriggerManager() {
+        return triggerManager;
+    }
+
+    public JobValidator getJobValidator() {
+        return jobValidator;
+    }
+
+    public RewardProcessor getRewardProcessor() {
+        return rewardProcessor;
     }
 
     // ==================== Getters ====================

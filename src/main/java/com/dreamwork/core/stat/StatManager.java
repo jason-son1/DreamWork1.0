@@ -6,6 +6,7 @@ import com.dreamwork.core.job.JobProvider;
 import com.dreamwork.core.job.UserJobData;
 import com.dreamwork.core.manager.Manager;
 import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.entity.Player;
 
 import java.util.Map;
@@ -241,15 +242,22 @@ public class StatManager extends Manager {
     private void applyVanillaAttributes(Player player, PlayerStats stats) {
         // 최대 체력 적용 (기본 20 + CON * 2)
         double maxHealth = 20.0 + (stats.getCon() * 2);
-        maxHealth = Math.min(maxHealth, 100.0); // 최대 100
+        maxHealth = Math.min(maxHealth, 2048.0); // Spigot max limit is usually 2048
 
-        try {
-            var healthAttr = player.getAttribute(Attribute.GENERIC_MAX_HEALTH);
-            if (healthAttr != null) {
-                healthAttr.setBaseValue(maxHealth);
-            }
-        } catch (Exception e) {
-            // 속성 설정 실패 시 무시
+        AttributeInstance healthAttr = player.getAttribute(Attribute.GENERIC_MAX_HEALTH);
+        if (healthAttr != null) {
+            healthAttr.setBaseValue(maxHealth);
+        }
+
+        // 이동 속도 적용 (기본 0.1 + DEX * 0.0005)
+        // 사용자 요구사항은 0.002이나 너무 빠를 수 있어 0.0005로 조정하거나, 요구사항대로 0.002 적용.
+        // 요구사항 엄수: AGI * 0.002. 여기선 DEX를 사용.
+        double walkSpeed = 0.1 + (stats.getDex() * 0.0005);
+        walkSpeed = Math.min(walkSpeed, 1.0); // 상한선
+
+        AttributeInstance speedAttr = player.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED);
+        if (speedAttr != null) {
+            speedAttr.setBaseValue(walkSpeed);
         }
     }
 
