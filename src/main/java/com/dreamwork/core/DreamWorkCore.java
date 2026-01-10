@@ -8,14 +8,19 @@ import com.dreamwork.core.quest.QuestManager;
 import com.dreamwork.core.stat.InventoryScanner;
 import com.dreamwork.core.stat.StatManager;
 import com.dreamwork.core.storage.StorageManager;
+import com.dreamwork.core.storage.AutoSaveScheduler;
 import com.dreamwork.core.task.AutoSaveTask;
 import com.dreamwork.core.gui.SmartInventory;
 import com.dreamwork.core.gui.provider.JobSelectionProvider;
 import com.dreamwork.core.gui.provider.StatProfileProvider;
-import com.dreamwork.core.hook.DreamWorkExpansion;
 import com.dreamwork.core.item.ItemFactory;
 import com.dreamwork.core.quest.QuestUI;
 import com.dreamwork.core.skill.SkillManager;
+import com.dreamwork.core.stat.resource.ManaRegenTask;
+import com.dreamwork.core.ui.ActionBarManager;
+import com.dreamwork.core.ui.BossBarManager;
+import com.dreamwork.core.ui.ScoreboardHUD;
+import com.dreamwork.core.economy.LootTableManager;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.command.Command;
@@ -70,6 +75,14 @@ public final class DreamWorkCore extends JavaPlugin {
     /** 아이템 팩토리 */
     private ItemFactory itemFactory;
 
+    /** UI 매니저 */
+    private ActionBarManager actionBarManager;
+    private BossBarManager bossBarManager;
+    private ScoreboardHUD scoreboardHUD;
+
+    /** 경제 매니저 */
+    private LootTableManager lootTableManager;
+
     /**
      * 플러그인 인스턴스를 반환합니다.
      * 
@@ -103,8 +116,21 @@ public final class DreamWorkCore extends JavaPlugin {
         // 이벤트 리스너 등록
         registerListeners();
 
-        // 자동 저장 태스크 시작 (5분마다)
-        new AutoSaveTask(this).runTaskTimer(this, 6000L, 6000L);
+        // 자동 저장 태스크 시작 (30초마다, Dirty-Check 기반)
+        new AutoSaveScheduler(this, 600L).start();
+
+        // 마나 재생 태스크 (1초마다)
+        new ManaRegenTask(this).start();
+
+        // UI 매니저 시작
+        actionBarManager = new ActionBarManager(this);
+        actionBarManager.start();
+        bossBarManager = new BossBarManager(this);
+        scoreboardHUD = new ScoreboardHUD(this);
+        scoreboardHUD.start();
+
+        // 드롭 테이블 매니저
+        lootTableManager = new LootTableManager(this);
 
         long endTime = System.currentTimeMillis();
         getLogger()
@@ -131,6 +157,14 @@ public final class DreamWorkCore extends JavaPlugin {
         // quests/daily.yml 기본 파일 저장
         if (!new java.io.File(getDataFolder(), "quests/daily.yml").exists()) {
             saveResource("quests/daily.yml", false);
+        }
+        // items.yml 기본 파일 저장
+        if (!new java.io.File(getDataFolder(), "items.yml").exists()) {
+            saveResource("items.yml", false);
+        }
+        // drops.yml 기본 파일 저장
+        if (!new java.io.File(getDataFolder(), "drops.yml").exists()) {
+            saveResource("drops.yml", false);
         }
     }
 

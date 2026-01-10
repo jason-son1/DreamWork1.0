@@ -1,0 +1,57 @@
+# ================================================================
+# DreamWork Core 커스텀 드롭 설정
+# ================================================================
+# 직업별 블록 드롭 확률 및 아이템 설정
+# 
+# 구조:
+# <직업ID>:
+#   <블록타입>:
+#     base: 0.05          # 기본 확률 (5%)
+#     per-level: 0.001    # 레벨당 추가 확률 (+0.1%)
+#     item: "item_id"     # 드롭할 아이템 ID (items.yml 참조)
+
+miner:
+  COAL_ORE:
+    base: 0.05
+    per-level: 0.001
+    item: "starter_sword"
+  IRON_ORE:
+    base: 0.03
+    per-level: 0.001
+    item: "miner_pickaxe"
+  GOLD_ORE:
+    base: 0.02
+    per-level: 0.001
+    item: "lucky_ring"
+  DIAMOND_ORE:
+    base: 0.01
+    per-level: 0.0005
+    item: "warrior_helmet"
+  STONE:
+    base: 0.01
+    per-level: 0.0005
+    item: null
+  DEEPSLATE:
+    base: 0.01
+    per-level: 0.0005
+    item: null
+
+farmer:
+  WHEAT:
+    base: 0.05
+    per-level: 0.001
+    item: null
+  CARROTS:
+    base: 0.04
+    per-level: 0.001
+    item: null
+  POTATOES:
+    base: 0.04
+    per-level: 0.001
+    item: null
+
+fisher:
+  # 낚시는 별도 이벤트로 처리
+
+hunter:
+  # 몬스터 드롭은 별도 시스템

@@ -301,4 +301,48 @@ public class StorageManager extends Manager {
     public File getUserdataFolder() {
         return userdataFolder;
     }
+
+    // ==================== UserData 캐시 및 래퍼 ====================
+
+    private final java.util.Map<UUID, UserData> userDataCache = new java.util.concurrent.ConcurrentHashMap<>();
+
+    /**
+     * 유저 데이터를 캐시에서 가져오거나 새로 생성합니다.
+     */
+    public UserData getUserData(UUID uuid) {
+        return userDataCache.computeIfAbsent(uuid, UserData::new);
+    }
+
+    /**
+     * 유저 데이터를 캐시에 저장합니다.
+     */
+    public void cacheUserData(UUID uuid, UserData data) {
+        userDataCache.put(uuid, data);
+    }
+
+    /**
+     * 유저 데이터를 캐시에서 제거합니다.
+     */
+    public void uncacheUserData(UUID uuid) {
+        userDataCache.remove(uuid);
+    }
+
+    /**
+     * 유저 데이터를 비동기로 저장합니다. (UserData 전용)
+     */
+    public CompletableFuture<Void> saveAsync(UUID uuid, UserData data) {
+        return saveUserJsonAsync(uuid, data);
+    }
+
+    /**
+     * 유저 데이터를 비동기로 로드합니다. (UserData 전용)
+     */
+    public CompletableFuture<UserData> loadAsync(UUID uuid) {
+        return loadUserJsonAsync(uuid, UserData.class)
+                .thenApply(opt -> {
+                    UserData data = opt.orElseGet(() -> new UserData(uuid));
+                    cacheUserData(uuid, data);
+                    return data;
+                });
+    }
 }

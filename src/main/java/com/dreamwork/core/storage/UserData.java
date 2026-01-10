@@ -36,6 +36,28 @@ public class UserData {
     /** 최초 접속 시간 */
     private long firstJoin;
 
+    // ==================== 자원 시스템 ====================
+
+    /** 최대 마나 */
+    private double maxMana = 100.0;
+
+    /** 현재 마나 */
+    private double currentMana = 100.0;
+
+    /** 마나 재생량 (초당) */
+    private double manaRegen = 2.0;
+
+    /** 일일 수익 (경제 시스템) */
+    private double dailyEarnedMoney = 0.0;
+
+    // ==================== Dirty Flag ====================
+
+    /** 데이터 변경 여부 (transient = JSON 저장 제외) */
+    private transient boolean dirty = false;
+
+    /** 마지막 수정 시간 */
+    private transient long lastModified = 0;
+
     /**
      * 기본 생성자 (Gson 역직렬화용)
      */
@@ -66,6 +88,37 @@ public class UserData {
         this.playerName = playerName;
     }
 
+    // ==================== Dirty Flag 메서드 ====================
+
+    /**
+     * 데이터가 변경되었음을 표시합니다.
+     */
+    public void markDirty() {
+        this.dirty = true;
+        this.lastModified = System.currentTimeMillis();
+    }
+
+    /**
+     * 데이터 변경 여부를 확인합니다.
+     */
+    public boolean isDirty() {
+        return dirty;
+    }
+
+    /**
+     * 데이터를 깨끗한 상태로 표시합니다. (저장 후 호출)
+     */
+    public void clearDirty() {
+        this.dirty = false;
+    }
+
+    /**
+     * 마지막 수정 시간을 반환합니다.
+     */
+    public long getLastModified() {
+        return lastModified;
+    }
+
     // ==================== Getters ====================
 
     public UUID getUuid() {
@@ -92,22 +145,42 @@ public class UserData {
         return firstJoin;
     }
 
+    public double getMaxMana() {
+        return maxMana;
+    }
+
+    public double getCurrentMana() {
+        return currentMana;
+    }
+
+    public double getManaRegen() {
+        return manaRegen;
+    }
+
+    public double getDailyEarnedMoney() {
+        return dailyEarnedMoney;
+    }
+
     // ==================== Setters ====================
 
     public void setUuid(UUID uuid) {
         this.uuid = uuid;
+        markDirty();
     }
 
     public void setPlayerName(String playerName) {
         this.playerName = playerName;
+        markDirty();
     }
 
     public void setJobData(UserJobData jobData) {
         this.jobData = jobData;
+        markDirty();
     }
 
     public void setStats(PlayerStats stats) {
         this.stats = stats;
+        markDirty();
     }
 
     public void setLastLogin(long lastLogin) {
@@ -116,6 +189,36 @@ public class UserData {
 
     public void setFirstJoin(long firstJoin) {
         this.firstJoin = firstJoin;
+    }
+
+    public void setMaxMana(double maxMana) {
+        this.maxMana = maxMana;
+        markDirty();
+    }
+
+    public void setCurrentMana(double currentMana) {
+        this.currentMana = Math.min(currentMana, maxMana);
+        markDirty();
+    }
+
+    public void setManaRegen(double manaRegen) {
+        this.manaRegen = manaRegen;
+        markDirty();
+    }
+
+    public void setDailyEarnedMoney(double amount) {
+        this.dailyEarnedMoney = amount;
+        markDirty();
+    }
+
+    public void addDailyEarnedMoney(double amount) {
+        this.dailyEarnedMoney += amount;
+        markDirty();
+    }
+
+    public void resetDailyEarnings() {
+        this.dailyEarnedMoney = 0;
+        markDirty();
     }
 
     /**
