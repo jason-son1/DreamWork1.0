@@ -342,12 +342,19 @@ public class StatManager extends Manager {
         /** 남은 스탯 포인트 */
         private int statPoints;
 
-        /** 보너스 스탯 (장비, 버프 등) */
+        /** 보너스 스탯 (직업 레벨 등) */
         private transient int bonusStr;
         private transient int bonusDex;
         private transient int bonusCon;
         private transient int bonusInt;
         private transient int bonusLuck;
+
+        /** 장비 스탯 */
+        private transient int equipmentStr;
+        private transient int equipmentDex;
+        private transient int equipmentCon;
+        private transient int equipmentInt;
+        private transient int equipmentLuck;
 
         /**
          * PlayerStats 생성자 (기본 스탯)
@@ -375,25 +382,25 @@ public class StatManager extends Manager {
             // TODO: 2단계에서 장비 Lore 파싱, 버프 효과 계산
         }
 
-        // Getters (총합 = 기본 + 보너스)
+        // Getters (총합 = 기본 + 직업보너스 + 장비)
         public int getStr() {
-            return str + bonusStr;
+            return str + bonusStr + equipmentStr;
         }
 
         public int getDex() {
-            return dex + bonusDex;
+            return dex + bonusDex + equipmentDex;
         }
 
         public int getCon() {
-            return con + bonusCon;
+            return con + bonusCon + equipmentCon;
         }
 
         public int getInt() {
-            return intelligence + bonusInt;
+            return intelligence + bonusInt + equipmentInt;
         }
 
         public int getLuck() {
-            return luck + bonusLuck;
+            return luck + bonusLuck + equipmentLuck;
         }
 
         // Base Getters
@@ -491,6 +498,27 @@ public class StatManager extends Manager {
 
         public void setBonusLuck(int bonus) {
             this.bonusLuck = bonus;
+        }
+
+        // Equipment Setters (장비용)
+        public void setEquipmentStr(int value) {
+            this.equipmentStr = value;
+        }
+
+        public void setEquipmentDex(int value) {
+            this.equipmentDex = value;
+        }
+
+        public void setEquipmentCon(int value) {
+            this.equipmentCon = value;
+        }
+
+        public void setEquipmentInt(int value) {
+            this.equipmentInt = value;
+        }
+
+        public void setEquipmentLuck(int value) {
+            this.equipmentLuck = value;
         }
 
         public UUID getUuid() {

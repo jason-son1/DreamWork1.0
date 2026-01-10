@@ -1,0 +1,80 @@
+# ================================================================
+# 일일 퀘스트 설정 파일
+# DreamWork Core - 퀘스트 시스템
+# ================================================================
+
+# 석탄 채굴 퀘스트
+mine_coal:
+  name: "석탄 채굴"
+  description: "석탄 광석 10개를 채굴하세요."
+  type: DAILY
+  requirement:
+    trigger: BLOCK_BREAK
+    target: COAL_ORE
+    amount: 10
+  reward:
+    exp: 50
+    items:
+      - "COAL:5"
+    commands: []
+
+# 철 채굴 퀘스트
+mine_iron:
+  name: "철광석 채굴"
+  description: "철 광석 5개를 채굴하세요."
+  type: DAILY
+  requirement:
+    trigger: BLOCK_BREAK
+    target: IRON_ORE
+    amount: 5
+  reward:
+    exp: 100
+    items:
+      - "IRON_INGOT:3"
+    commands: []
+
+# 낚시 퀘스트
+catch_fish:
+  name: "낚시의 달인"
+  description: "물고기 3마리를 낚으세요."
+  type: DAILY
+  requirement:
+    trigger: FISH_CATCH
+    target: "*"
+    amount: 3
+  reward:
+    exp: 75
+    items:
+      - "COD:5"
+    commands: []
+
+# 돌 채굴 퀘스트
+mine_stone:
+  name: "광부의 일상"
+  description: "돌 50개를 채굴하세요."
+  type: DAILY
+  requirement:
+    trigger: BLOCK_BREAK
+    target: STONE
+    amount: 50
+  reward:
+    exp: 30
+    items:
+      - "COBBLESTONE:32"
+    commands: []
+
+# 몹 처치 퀘스트
+kill_zombies:
+  name: "좀비 사냥꾼"
+  description: "좀비 10마리를 처치하세요."
+  type: DAILY
+  requirement:
+    trigger: MOB_KILL
+    target: ZOMBIE
+    amount: 10
+  reward:
+    exp: 120
+    items:
+      - "ROTTEN_FLESH:10"
+      - "EXPERIENCE_BOTTLE:3"
+    commands: []

@@ -2,14 +2,17 @@ package com.dreamwork.core;
 
 import com.dreamwork.core.hook.HookManager;
 import com.dreamwork.core.job.JobManager;
-import com.dreamwork.core.listener.GuiListener;
-import com.dreamwork.core.listener.JobActivityListener;
-import com.dreamwork.core.listener.PlayerDataListener;
-import com.dreamwork.core.listener.StatEffectListener;
+import com.dreamwork.core.listener.*;
 import com.dreamwork.core.manager.Manager;
+import com.dreamwork.core.quest.QuestManager;
+import com.dreamwork.core.stat.InventoryScanner;
 import com.dreamwork.core.stat.StatManager;
 import com.dreamwork.core.storage.StorageManager;
 import com.dreamwork.core.task.AutoSaveTask;
+import com.dreamwork.core.gui.SmartInventory;
+import com.dreamwork.core.gui.SmartInventory;
+import com.dreamwork.core.gui.provider.JobSelectionProvider;
+import com.dreamwork.core.gui.provider.StatProfileProvider;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.command.Command;
@@ -51,6 +54,12 @@ public final class DreamWorkCore extends JavaPlugin {
 
     /** 직업 매니저 */
     private JobManager jobManager;
+
+    /** 퀸스트 매니저 */
+    private QuestManager questManager;
+
+    /** 장비 스캐너 */
+    private InventoryScanner inventoryScanner;
 
     /**
      * 플러그인 인스턴스를 반환합니다.
@@ -110,6 +119,10 @@ public final class DreamWorkCore extends JavaPlugin {
         if (!new java.io.File(getDataFolder(), "jobs/miner.yml").exists()) {
             saveResource("jobs/miner.yml", false);
         }
+        // quests/daily.yml 기본 파일 저장
+        if (!new java.io.File(getDataFolder(), "quests/daily.yml").exists()) {
+            saveResource("quests/daily.yml", false);
+        }
     }
 
     /**
@@ -131,6 +144,13 @@ public final class DreamWorkCore extends JavaPlugin {
         // 직업 매니저 (스탯 매니저 이후)
         jobManager = new JobManager(this);
         registerManager(jobManager);
+
+        // 퀸스트 매니저
+        questManager = new QuestManager(this);
+        registerManager(questManager);
+
+        // 장비 스캐너 (리스너로도 동작)
+        inventoryScanner = new InventoryScanner(this);
 
         getLogger().info(managers.size() + "개의 매니저가 초기화되었습니다.");
     }
@@ -179,8 +199,20 @@ public final class DreamWorkCore extends JavaPlugin {
         // GUI 리스너
         getServer().getPluginManager().registerEvents(new GuiListener(), this);
 
+        // SmartInventory 리스너
+        SmartInventory.registerListener(this);
+
+        // 전투 리스너
+        getServer().getPluginManager().registerEvents(new CombatListener(this), this);
+
+        // 상호작용 리스너
+        getServer().getPluginManager().registerEvents(new InteractionListener(this), this);
+
+        // 장비 스캐너 (리스너)
+        getServer().getPluginManager().registerEvents(inventoryScanner, this);
+
         if (isDebugMode()) {
-            getLogger().info("[Debug] 이벤트 리스너 4개 등록 완료");
+            getLogger().info("[Debug] 이벤트 리스너 8개 등록 완료");
         }
     }
 
@@ -250,14 +282,24 @@ public final class DreamWorkCore extends JavaPlugin {
                         sendMessage(sender, "&c플레이어만 사용할 수 있습니다.");
                         return true;
                     }
-                    new com.dreamwork.core.gui.JobSelectionUI(this, player).open();
+                    SmartInventory.builder()
+                            .title("직업 선택")
+                            .size(27)
+                            .provider(new JobSelectionProvider(player, this))
+                            .build()
+                            .open(player);
                 }
                 case "stat" -> {
                     if (!(sender instanceof org.bukkit.entity.Player player)) {
                         sendMessage(sender, "&c플레이어만 사용할 수 있습니다.");
                         return true;
                     }
-                    new com.dreamwork.core.gui.StatProfileUI(this, player).open();
+                    SmartInventory.builder()
+                            .title("스탯 프로필")
+                            .size(36)
+                            .provider(new StatProfileProvider(player, this))
+                            .build()
+                            .open(player);
                 }
                 default -> sendMessage(sender, getMessage("unknown-command"));
             }
@@ -332,5 +374,14 @@ public final class DreamWorkCore extends JavaPlugin {
      */
     public JobManager getJobManager() {
         return jobManager;
+    }
+
+    /**
+     * 퀸스트 매니저를 반환합니다.
+     * 
+     * @return QuestManager 인스턴스
+     */
+    public QuestManager getQuestManager() {
+        return questManager;
     }
 }

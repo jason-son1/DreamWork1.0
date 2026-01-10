@@ -27,3 +27,31 @@ exp-formula: "100 + (level * 25) + (level^2 * 5)"
 # 데이터 자동 저장 주기 (틱 단위)
 # 20틱 = 1초, 1200틱 = 1분, 6000틱 = 5분
 auto-save-interval: 6000
+
+# 전투 시스템 설정
+combat:
+  # STR 스탯 1당 추가 데미지 배율
+  strength-multiplier: 0.5
+
+# 상호작용 시스템 설정
+interaction:
+  # DEX 스탯 1당 더블 드롭 확률 (0.002 = 0.2%)
+  dex-multiplier: 0.002
+  # LUCK 스탯 1당 희귀 드롭 확률 (0.001 = 0.1%)
+  luck-multiplier: 0.001
+
+# 스탯 시스템 설정
+stats:
+  # 레벨업 시 획득 스탯 포인트
+  points-per-level: 3
+  # 이동속도 증가율 (DEX 1당)
+  speed-per-dex: 0.0005
+  # 최대 체력 증가량 (CON 1당)
+  health-per-con: 2
+
+# 퀘스트 시스템 설정
+quests:
+  # 일일 퀘스트 활성화 개수
+  daily-quest-count: 3
+  # 일일 퀘스트 재설정 시간 (서버 시간 기준 0시)
+  reset-hour: 0

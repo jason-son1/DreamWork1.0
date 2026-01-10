@@ -7,7 +7,9 @@ public enum TriggerType {
     BLOCK_BREAK,
     FISH_CATCH,
     MOB_KILL,
-    HARVEST;
+    HARVEST,
+    CRAFT_ITEM,
+    EAT_FOOD;
 
     /**
      * 문자열로부터 트리거 타입을 반환합니다. 대소문자 무시.
