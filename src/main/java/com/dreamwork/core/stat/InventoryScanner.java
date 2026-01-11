@@ -107,13 +107,34 @@ public class InventoryScanner implements Listener {
 
         StatManager.PlayerStats stats = statManager.getStats(player);
 
-        // 장비 보너스 설정 (기존 보너스에 추가가 아닌 교체)
-        // recalculateStats에서 직업 보너스와 함께 처리되므로 여기선 직접 호출
+        // 장비 보너스 설정
         stats.setEquipmentStr(equipStats[0]);
         stats.setEquipmentDex(equipStats[1]);
         stats.setEquipmentCon(equipStats[2]);
         stats.setEquipmentInt(equipStats[3]);
         stats.setEquipmentLuck(equipStats[4]);
+
+        // 세트 효과 적용
+        if (plugin.getSetEffectManager() != null) {
+            java.util.Map<String, Integer> setBonuses = plugin.getSetEffectManager()
+                    .calculateSetBonuses(player.getInventory());
+            stats.setSetBonusStr(setBonuses.getOrDefault("STR", 0));
+            stats.setSetBonusDex(setBonuses.getOrDefault("DEX", 0));
+            stats.setSetBonusCon(setBonuses.getOrDefault("CON", 0));
+            stats.setSetBonusInt(setBonuses.getOrDefault("INT", 0));
+            stats.setSetBonusLuck(setBonuses.getOrDefault("LUCK", 0));
+
+            if (plugin.isDebugMode() && !setBonuses.isEmpty()) {
+                plugin.getLogger().info("[Debug] 세트 효과 적용: " + setBonuses);
+            }
+        } else {
+            // 매니저가 없을 경우 0으로 초기화
+            stats.setSetBonusStr(0);
+            stats.setSetBonusDex(0);
+            stats.setSetBonusCon(0);
+            stats.setSetBonusInt(0);
+            stats.setSetBonusLuck(0);
+        }
 
         // 바닐라 속성 재적용
         statManager.recalculateStats(player);

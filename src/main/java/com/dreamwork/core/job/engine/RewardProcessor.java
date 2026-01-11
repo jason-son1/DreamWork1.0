@@ -79,6 +79,29 @@ public class RewardProcessor {
             message = message.replace("%player%", player.getName());
             player.sendMessage(translateColorCodes(message));
         }
+
+        // Money
+        if (rewards.containsKey("money")) {
+            processMoney(player, rewards.get("money"));
+        }
+    }
+
+    /**
+     * 돈 보상 처리 (Vault)
+     */
+    private void processMoney(Player player, Object moneyObj) {
+        net.milkbowl.vault.economy.Economy econ = com.dreamwork.core.DreamWorkCore.getEconomy();
+        if (econ == null) {
+            return;
+        }
+
+        try {
+            double amount = Double.parseDouble(String.valueOf(moneyObj));
+            econ.depositPlayer(player, amount);
+            player.sendMessage(String.format("§e[보상] §f%.0f원을 획득했습니다!", amount));
+        } catch (NumberFormatException e) {
+            // ignore
+        }
     }
 
     /**

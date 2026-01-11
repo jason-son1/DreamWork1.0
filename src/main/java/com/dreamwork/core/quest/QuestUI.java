@@ -108,10 +108,16 @@ public class QuestUI extends InventoryProvider {
             }
         }
 
+        // 리롤 안내 (일일 퀘스트인 경우)
+        if (quest.getType() == Quest.QuestType.DAILY && progress.getStatus() == QuestProgress.QuestStatus.IN_PROGRESS) {
+            lore.add(Component.text(""));
+            lore.add(Component.text("§e[우클릭하여 교체] §7(1000원)"));
+        }
+
         // 클릭 안내
         if (progress.getStatus() == QuestProgress.QuestStatus.COMPLETED) {
             lore.add(Component.text(""));
-            lore.add(Component.text("§a[클릭하여 보상 수령]"));
+            lore.add(Component.text("§a[좌클릭하여 보상 수령]"));
         }
 
         meta.lore(lore);
@@ -144,14 +150,32 @@ public class QuestUI extends InventoryProvider {
 
         String questId = questIds.get(slot);
         QuestProgress progress = progresses.get(questId);
+        Quest quest = questManager.getQuest(questId);
 
+        if (quest == null)
+            return;
+
+        // 우클릭: 리롤 (일일 퀘스트만)
+        if (event.isRightClick()) {
+            if (quest.getType() == Quest.QuestType.DAILY
+                    && progress.getStatus() == QuestProgress.QuestStatus.IN_PROGRESS) {
+                if (questManager.rerollDailyQuest(player, questId)) {
+                    player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
+                    init(event.getInventory()); // 즉시 갱신
+                } else {
+                    player.playSound(player.getLocation(), Sound.BLOCK_ANVIL_LAND, 1, 0.5f);
+                }
+            }
+            return;
+        }
+
+        // 좌클릭: 보상 수령
         if (progress.getStatus() == QuestProgress.QuestStatus.COMPLETED) {
-            // 보상 수령
             if (questManager.giveReward(player, questId)) {
                 player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
-                refresh();
+                init(event.getInventory()); // 즉시 갱신
             }
-        } else {
+        } else if (progress.getStatus() == QuestProgress.QuestStatus.IN_PROGRESS) {
             player.sendMessage("§c아직 퀘스트를 완료하지 않았습니다.");
         }
     }

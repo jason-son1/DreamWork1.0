@@ -117,7 +117,14 @@ public class CombatMechanic {
         double defense = con * 2;
         double reduction = 100.0 / (100.0 + defense);
 
-        return damage * reduction;
+        double finalDamage = damage * reduction;
+
+        // [광부] 단단한 피부 (Passive): 받는 물리 데미지 5% 감소
+        if (plugin.getSkillManager().hasSkill(victim, "tough_skin")) {
+            finalDamage *= 0.95; // 5% 감소
+        }
+
+        return finalDamage;
     }
 
     /**

@@ -1,0 +1,83 @@
+# DreamWork 아이템 세트 설정
+
+# ---------------------------------------------------------
+# 광부 세트 (철 갑옷 -> 금 갑옷 트리)
+# ---------------------------------------------------------
+miner_basic_set:
+  name: "광부의 작업복"
+  items:
+    helmet: IRON_HELMET
+    chestplate: IRON_CHESTPLATE
+    leggings: IRON_LEGGINGS
+    boots: IRON_BOOTS
+  effects:
+    2: # 2세트 효과
+      CON: 2
+    4: # 4세트 효과
+      STR: 3
+      CON: 3
+
+miner_master_set:
+  name: "전문 광부 세트"
+  items:
+    helmet: GOLDEN_HELMET
+    chestplate: GOLDEN_CHESTPLATE
+    leggings: GOLDEN_LEGGINGS
+    boots: GOLDEN_BOOTS
+  effects:
+    2:
+      LUCK: 5
+    4:
+      LUCK: 10
+      STR: 5
+
+# ---------------------------------------------------------
+# 낚시꾼 세트 (가죽 갑옷)
+# ---------------------------------------------------------
+fisher_set:
+  name: "강태공의 복장"
+  items:
+    helmet: LEATHER_HELMET
+    chestplate: LEATHER_CHESTPLATE
+    leggings: LEATHER_LEGGINGS
+    boots: LEATHER_BOOTS
+  effects:
+    2:
+      INT: 2
+      LUCK: 3
+    4:
+      INT: 5
+      LUCK: 7
+
+# ---------------------------------------------------------
+# 사냥꾼 세트 (사슬 갑옷 -> 다이아 갑옷)
+# ---------------------------------------------------------
+hunter_basic_set:
+  name: "사냥꾼의 갑주"
+  items:
+    helmet: CHAINMAIL_HELMET
+    chestplate: CHAINMAIL_CHESTPLATE
+    leggings: CHAINMAIL_LEGGINGS
+    boots: CHAINMAIL_BOOTS
+  effects:
+    2:
+      DEX: 3
+    4:
+      DEX: 5
+      STR: 2
+
+hunter_master_set:
+  name: "마스터 헌터 세트"
+  items:
+    helmet: DIAMOND_HELMET
+    chestplate: DIAMOND_CHESTPLATE
+    leggings: DIAMOND_LEGGINGS
+    boots: DIAMOND_BOOTS
+  effects:
+    2:
+      STR: 5
+      DEX: 5
+    4:
+      STR: 10
+      DEX: 10
+      CON: 10

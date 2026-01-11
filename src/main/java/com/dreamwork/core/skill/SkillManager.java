@@ -5,7 +5,10 @@ import com.dreamwork.core.job.JobManager;
 import com.dreamwork.core.job.UserJobData;
 import com.dreamwork.core.manager.Manager;
 import com.dreamwork.core.skill.skills.Dash;
+import com.dreamwork.core.skill.skills.Adrenaline;
+import com.dreamwork.core.skill.skills.GoldenHook;
 import com.dreamwork.core.skill.skills.MinerBlast;
+import com.dreamwork.core.skill.skills.SuperHeat;
 import org.bukkit.entity.Player;
 
 import java.util.*;
@@ -72,7 +75,21 @@ public class SkillManager extends Manager {
      * 기본 스킬을 등록합니다.
      */
     private void registerDefaultSkills() {
+        // 광부 스킬
         registerSkill(new MinerBlast(plugin));
+        registerSkill(new SuperHeat(plugin));
+        registerSkill(new com.dreamwork.core.skill.skills.ToughSkin(plugin));
+        registerSkill(new com.dreamwork.core.skill.skills.GemDetector(plugin));
+
+        // 낚시꾼 스킬
+        registerSkill(new GoldenHook(plugin));
+        registerSkill(new com.dreamwork.core.skill.skills.Patience(plugin));
+
+        // 사냥꾼 스킬
+        registerSkill(new Adrenaline(plugin));
+        registerSkill(new com.dreamwork.core.skill.skills.HeadHunter(plugin));
+
+        // 공용 스킬
         registerSkill(new Dash(plugin));
     }
 
@@ -109,22 +126,31 @@ public class SkillManager extends Manager {
             return false;
         }
 
+        return hasSkill(player, skillId);
+    }
+
+    /**
+     * 플레이어가 해당 스킬을 보유하고 있는지 확인합니다.
+     * (직업 및 레벨 조건 충족 여부 확인)
+     */
+    public boolean hasSkill(Player player, String skillId) {
+        SkillEffect skill = skills.get(skillId);
+        if (skill == null)
+            return false;
+
         // 직업 체크
         if (skill.getRequiredJob() != null) {
             JobManager jobManager = plugin.getJobManager();
             UserJobData jobData = jobManager.getUserJob(player.getUniqueId());
             if (!jobData.hasJob() || !jobData.getJobId().equals(skill.getRequiredJob())) {
-                player.sendMessage("§c[스킬] 해당 직업 전용 스킬입니다.");
                 return false;
             }
 
             // 레벨 체크
             if (jobData.getLevel() < skill.getRequiredLevel()) {
-                player.sendMessage("§c[스킬] 레벨이 부족합니다. (필요: Lv." + skill.getRequiredLevel() + ")");
                 return false;
             }
         }
-
         return true;
     }
 

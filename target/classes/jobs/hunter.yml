@@ -1,0 +1,45 @@
+id: "hunter"
+display: "사냥꾼"
+description: "몬스터를 사냥하여 경험치를 얻는 전투 직업"
+icon: BOW
+max_level: 100
+
+exp_formula:
+  base: 100
+  exponent: 1.6
+
+exp_sources:
+  kill_mob:
+    ZOMBIE: 10
+    SKELETON: 12
+    SPIDER: 15
+    CREEPER: 20
+    ENDERMAN: 50
+    WITCH: 40
+    BLAZE: 60
+    WITHER_SKELETON: 80
+    ENDER_DRAGON: 1000
+    WITHER: 1000
+
+rewards:
+  10:
+    message: "&c[사냥꾼] &f약점 포착(Passive) 능력을 깨달았습니다! (치명타 확률 증가)"
+    # 약점 포착은 별도의 스킬 클래스 없이 기본 스탯 보너스로 처리하거나, 추후 추가
+    commands:
+      - "money give %player% 1000"
+  30:
+    message: "&c[사냥꾼] &6아드레날린(Active) 스킬을 배웠습니다!"
+    commands:
+      - "dw skill unlock %player% adrenaline"
+  50:
+    message: "&c[사냥꾼] &f헤드헌터(Passive) 능력을 얻었습니다! (머리 드롭)"
+    commands:
+      - "dw skill unlock %player% head_hunter"
+  80:
+    message: "&c[사냥꾼] &4몬스터 학살자&f 칭호를 획득했습니다!"
+    commands:
+      - "lp user %player% parent add hunter_master"
+
+stats_per_level:
+  str: 1.0
+  dex: 0.5

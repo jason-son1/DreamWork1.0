@@ -168,17 +168,77 @@ public class QuestManager extends Manager {
     }
 
     /**
-     * 플레이어에게 일일 퀘스트를 할당합니다.
+     * 플레이어에게 퀘스트를 할당합니다. (일일 + 주간)
      */
     public void assignDailyQuests(Player player) {
         UUID uuid = player.getUniqueId();
         Map<String, QuestProgress> progress = playerProgress.computeIfAbsent(uuid, k -> new ConcurrentHashMap<>());
 
+        // 일일 퀘스트 할당
         for (String questId : todaysDailyQuests) {
             if (!progress.containsKey(questId)) {
                 progress.put(questId, new QuestProgress(questId));
             }
         }
+
+        // 주간 퀘스트 할당 (로드된 모든 주간 퀘스트)
+        for (Quest quest : quests.values()) {
+            if (quest.getType() == Quest.QuestType.WEEKLY) {
+                if (!progress.containsKey(quest.getId())) {
+                    progress.put(quest.getId(), new QuestProgress(quest.getId()));
+                }
+            }
+        }
+    }
+
+    /**
+     * 일일 퀘스트를 리롤합니다.
+     * 
+     * @param player     플레이어
+     * @param oldQuestId 변경할 퀘스트 ID
+     * @return 성공 여부
+     */
+    public boolean rerollDailyQuest(Player player, String oldQuestId) {
+        // 비용 확인 및 차감 (1000원)
+        net.milkbowl.vault.economy.Economy econ = com.dreamwork.core.DreamWorkCore.getEconomy();
+        if (econ == null) {
+            player.sendMessage("§c경제 시스템이 활성화되지 않았습니다.");
+            return false;
+        }
+
+        if (!econ.has(player, 1000)) {
+            player.sendMessage("§c리롤 비용이 부족합니다. (필요: 1000원)");
+            return false;
+        }
+
+        UUID uuid = player.getUniqueId();
+        Map<String, QuestProgress> progress = playerProgress.get(uuid);
+        if (progress == null || !progress.containsKey(oldQuestId)) {
+            return false;
+        }
+
+        // 새로운 퀘스트 선택 (현재 할당되지 않은 것 중)
+        List<String> available = new ArrayList<>();
+        for (String id : dailyQuestPool) {
+            if (!progress.containsKey(id) && !id.equals(oldQuestId)) {
+                available.add(id);
+            }
+        }
+
+        if (available.isEmpty()) {
+            player.sendMessage("§c교체할 수 있는 퀘스트가 없습니다.");
+            return false;
+        }
+
+        econ.withdrawPlayer(player, 1000);
+
+        // 퀘스트 교체
+        progress.remove(oldQuestId);
+        String newQuestId = available.get(new Random().nextInt(available.size()));
+        progress.put(newQuestId, new QuestProgress(newQuestId));
+
+        player.sendMessage("§a[퀘스트] 새로운 퀘스트로 교체되었습니다!");
+        return true;
     }
 
     /**

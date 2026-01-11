@@ -48,7 +48,19 @@ public class JobActivityListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBlockBreak(BlockBreakEvent event) {
-        handleJobEvent(event, event.getPlayer(), event.getBlock().getType().name());
+        Player player = event.getPlayer();
+        // [광부] 보석 탐지 (Passive)
+        if (event.getBlock().getType() == Material.STONE || event.getBlock().getType() == Material.DEEPSLATE) {
+            if (plugin.getSkillManager().hasSkill(player, "gem_detector")) {
+                if (java.util.concurrent.ThreadLocalRandom.current().nextDouble() < 0.001) { // 0.1%
+                    event.getBlock().getWorld().dropItemNaturally(event.getBlock().getLocation(),
+                            new ItemStack(Material.EMERALD));
+                    player.sendMessage("§b[광부] 반짝이는 보석을 발견했습니다!");
+                }
+            }
+        }
+
+        handleJobEvent(event, player, event.getBlock().getType().name());
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -61,6 +73,9 @@ public class JobActivityListener implements Listener {
         if (caught != null) {
             if (caught instanceof org.bukkit.entity.Item itemEntity) {
                 target = itemEntity.getItemStack().getType().name();
+
+                // [어부] 인내심/황금낚싯바늘 등은 여기서 처리하거나 낚시 메커니즘 변경 필요
+                // 여기서는 보상 처리만 담당
             } else {
                 target = caught.getType().name();
             }
@@ -74,6 +89,27 @@ public class JobActivityListener implements Listener {
         Player killer = event.getEntity().getKiller();
         if (killer == null)
             return;
+
+        // [사냥꾼] 헤드헌터 (Passive)
+        if (plugin.getSkillManager().hasSkill(killer, "head_hunter")) {
+            if (java.util.concurrent.ThreadLocalRandom.current().nextDouble() < 0.05) { // 5%
+                Material headType = Material.CREEPER_HEAD; // 기본값
+                switch (event.getEntity().getType()) {
+                    case ZOMBIE -> headType = Material.ZOMBIE_HEAD;
+                    case SKELETON -> headType = Material.SKELETON_SKULL;
+                    case CREEPER -> headType = Material.CREEPER_HEAD;
+                    case PIGLIN -> headType = Material.PIGLIN_HEAD;
+                    case ENDER_DRAGON -> headType = Material.DRAGON_HEAD;
+                    case WITHER_SKELETON -> headType = Material.WITHER_SKELETON_SKULL;
+                    default -> headType = null;
+                }
+
+                if (headType != null) {
+                    event.getDrops().add(new ItemStack(headType));
+                    killer.sendMessage("§c[사냥꾼] 적의 머리를 취했습니다!");
+                }
+            }
+        }
 
         handleJobEvent(event, killer, event.getEntity().getType().name());
     }

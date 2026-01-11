@@ -1,0 +1,139 @@
+# DreamWork Core 주간 퀘스트
+# 매주 월요일 자정에 초기화되며, 높은 보상을 제공합니다.
+
+weekly_quests:
+  # ==================== 채광 ====================
+  wq_mining_master:
+    name: "광산의 지배자"
+    desc: "광물 1000개를 채굴하세요."
+    difficulty: HARD
+    type: WEEKLY
+    requirement:
+      type: BLOCK_BREAK
+      target: ANY_ORE
+      amount: 1000
+    reward:
+      money: 15000
+      exp: 3000
+      items:
+        - "DIAMOND:5"
+        - "GOLDEN_APPLE:3"
+
+  wq_diamond_rush:
+    name: "다이아몬드 러시"
+    desc: "다이아몬드 원석 25개를 캐세요."
+    difficulty: HARD
+    type: WEEKLY
+    requirement:
+      type: BLOCK_BREAK
+      target: DIAMOND_ORE
+      amount: 25
+    reward:
+      money: 20000
+      exp: 5000
+
+  # ==================== 낚시 ====================
+  wq_fishing_marathon:
+    name: "낚시 마라톤"
+    desc: "물고기 200마리를 낚으세요."
+    difficulty: HARD
+    type: WEEKLY
+    requirement:
+      type: FISH_CATCH
+      target: ANY
+      amount: 200
+    reward:
+      money: 12000
+      exp: 2500
+      items:
+        - "ENCHANTED_BOOK:1"
+
+  wq_treasure_seeker:
+    name: "보물 사냥꾼"
+    desc: "낚시로 보물 아이템 10개를 획득하세요."
+    difficulty: HARD
+    type: WEEKLY
+    requirement:
+      type: FISH_CATCH
+      target: TREASURE
+      amount: 10
+    reward:
+      money: 18000
+      exp: 4000
+
+  # ==================== 사냥 ====================
+  wq_dungeon_clearer:
+    name: "던전 청소부"
+    desc: "몬스터 500마리를 처치하세요."
+    difficulty: HARD
+    type: WEEKLY
+    requirement:
+      type: ENTITY_KILL
+      target: ANY_HOSTILE
+      amount: 500
+    reward:
+      money: 15000
+      exp: 3500
+      items:
+        - "ARROW:64"
+        - "COOKED_BEEF:32"
+
+  wq_boss_hunter:
+    name: "보스 헌터"
+    desc: "보스급 몬스터(엔더 드래곤 또는 위더)를 1마리 처치하세요."
+    difficulty: LEGENDARY
+    type: WEEKLY
+    requirement:
+      type: ENTITY_KILL
+      target: BOSS
+      amount: 1
+    reward:
+      money: 50000
+      exp: 10000
+      items:
+        - "NETHER_STAR:1"
+        - "DIAMOND_BLOCK:3"
+
+  wq_enderman_exterminator:
+    name: "엔더맨 학살자"
+    desc: "엔더맨 50마리를 처치하세요."
+    difficulty: HARD
+    type: WEEKLY
+    requirement:
+      type: ENTITY_KILL
+      target: ENDERMAN
+      amount: 50
+    reward:
+      money: 16000
+      exp: 3500
+      items:
+        - "ENDER_PEARL:16"
+
+  # ==================== 종합 ====================
+  wq_world_traveler:
+    name: "세계 여행자"
+    desc: "10,000 블록을 이동하세요."
+    difficulty: NORMAL
+    type: WEEKLY
+    requirement:
+      type: TRAVEL
+      target: ANY
+      amount: 10000
+    reward:
+      money: 8000
+      exp: 1500
+
+  wq_daily_dedication:
+    name: "꾸준함의 보상"
+    desc: "일일 퀘스트를 7번 완료하세요."
+    difficulty: NORMAL
+    type: WEEKLY
+    requirement:
+      type: QUEST_COMPLETE
+      target: DAILY
+      amount: 7
+    reward:
+      money: 10000
+      exp: 2000
+      items:
+        - "GOLD_INGOT:16"

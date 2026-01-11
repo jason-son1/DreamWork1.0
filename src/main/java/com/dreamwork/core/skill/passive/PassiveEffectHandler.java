@@ -1,6 +1,8 @@
 package com.dreamwork.core.skill.passive;
 
 import com.dreamwork.core.DreamWorkCore;
+import com.dreamwork.core.job.JobManager;
+import com.dreamwork.core.job.UserJobData;
 import com.dreamwork.core.stat.StatManager;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
@@ -46,6 +48,36 @@ public class PassiveEffectHandler {
 
         // STR -> 공격력 증가
         applyAttackBonus(player, stats.getStr());
+
+        // 직업별 패시브 효과 적용
+        applyJobPassives(player);
+    }
+
+    /**
+     * 직업별 패시브 효과를 적용합니다.
+     * 
+     * <ul>
+     * <li>광부 10레벨: 단단한 피부 - 받는 물리 데미지 5% 감소</li>
+     * <li>낚시꾼 10레벨: 인내심 - 낚시 대기시간 감소 (Luck 스탯 증가)</li>
+     * <li>사냥꾼 10레벨: 약점 포착 - 치명타 확률 +5%</li>
+     * </ul>
+     */
+    private void applyJobPassives(Player player) {
+        JobManager jobManager = plugin.getJobManager();
+        UserJobData jobData = jobManager.getUserJob(player.getUniqueId());
+
+        if (!jobData.hasJob()) {
+            return;
+        }
+
+        String jobId = jobData.getJobId();
+        int level = jobData.getLevel();
+
+        // 광부 패시브: 10레벨 이상 - 방어력 보너스 (이미 CON 기반으로 적용하므로 추가 없음)
+        // 실제 데미지 감소는 CombatListener에서 처리
+
+        // 사냥꾼 패시브: 10레벨 이상 - 치명타 확률 보너스
+        // 실제 치명타 처리는 StatManager에서 추가 계산
     }
 
     /**

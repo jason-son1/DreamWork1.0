@@ -121,26 +121,21 @@ public class StatManager extends Manager {
     /**
      * 플레이어의 스탯을 저장합니다.
      * 
+     * <p>
+     * 개별 저장은 지원하지 않습니다. 통합 데이터 저장을 이용하세요.
+     * </p>
+     * 
      * @param uuid 플레이어 UUID
      */
     public void saveStats(UUID uuid) {
-        PlayerStats stats = statsCache.get(uuid);
-        if (stats != null) {
-            // TODO: 2단계에서 StorageManager와 연동하여 파일에 저장
-            plugin.getStorageManager().saveUserJsonAsync(uuid, stats);
-        }
+        // 개별 저장 로직 제거 (UserData 통합 저장 사용)
     }
 
     /**
      * 모든 캐시된 스탯을 저장합니다.
      */
     public void saveAllStats() {
-        for (UUID uuid : statsCache.keySet()) {
-            saveStats(uuid);
-        }
-        if (plugin.isDebugMode()) {
-            plugin.getLogger().info("[Debug] 모든 스탯 저장 완료: " + statsCache.size() + "명");
-        }
+        // 개별 저장 로직 제거
     }
 
     /**
@@ -215,6 +210,13 @@ public class StatManager extends Manager {
                     }
                 }
             }
+        }
+
+        if (plugin.getSkillManager().hasSkill(player, "tough_skin")) {
+            // 단단한 피부: 받는 데미지 5% 감소 (여기서는 방어력 등으로 구현하거나, CombatListener에서 처리)
+            // 하지만 요구사항은 'StatManager에서 처리'가 아닐 수도 있음.
+            // CombatListener에서 처리하는 것이 맞으나, 스탯 보너스가 있다면 여기서 처리.
+            // 예시 구현에서는 'tough_skin'이 패시브로 동작하므로, 별도 처리 없음 (CombatListener에서 체크).
         }
 
         // 스탯 내부 재계산 (장비 등)
@@ -356,6 +358,13 @@ public class StatManager extends Manager {
         private transient int equipmentInt;
         private transient int equipmentLuck;
 
+        /** 세트 보너스 스탯 */
+        private transient int setBonusStr;
+        private transient int setBonusDex;
+        private transient int setBonusCon;
+        private transient int setBonusInt;
+        private transient int setBonusLuck;
+
         /**
          * PlayerStats 생성자 (기본 스탯)
          * 
@@ -373,34 +382,30 @@ public class StatManager extends Manager {
 
         /**
          * 스탯을 재계산합니다.
-         * 
-         * <p>
-         * 장비와 버프 스탯을 합산합니다.
-         * </p>
          */
         public void recalculate() {
             // TODO: 2단계에서 장비 Lore 파싱, 버프 효과 계산
         }
 
-        // Getters (총합 = 기본 + 직업보너스 + 장비)
+        // Getters (총합 = 기본 + 직업보너스 + 장비 + 세트효과)
         public int getStr() {
-            return str + bonusStr + equipmentStr;
+            return str + bonusStr + equipmentStr + setBonusStr;
         }
 
         public int getDex() {
-            return dex + bonusDex + equipmentDex;
+            return dex + bonusDex + equipmentDex + setBonusDex;
         }
 
         public int getCon() {
-            return con + bonusCon + equipmentCon;
+            return con + bonusCon + equipmentCon + setBonusCon;
         }
 
         public int getInt() {
-            return intelligence + bonusInt + equipmentInt;
+            return intelligence + bonusInt + equipmentInt + setBonusInt;
         }
 
         public int getLuck() {
-            return luck + bonusLuck + equipmentLuck;
+            return luck + bonusLuck + equipmentLuck + setBonusLuck;
         }
 
         // Base Getters
@@ -519,6 +524,27 @@ public class StatManager extends Manager {
 
         public void setEquipmentLuck(int value) {
             this.equipmentLuck = value;
+        }
+
+        // Set Bonus Setters
+        public void setSetBonusStr(int value) {
+            this.setBonusStr = value;
+        }
+
+        public void setSetBonusDex(int value) {
+            this.setBonusDex = value;
+        }
+
+        public void setSetBonusCon(int value) {
+            this.setBonusCon = value;
+        }
+
+        public void setSetBonusInt(int value) {
+            this.setBonusInt = value;
+        }
+
+        public void setSetBonusLuck(int value) {
+            this.setBonusLuck = value;
         }
 
         public UUID getUuid() {

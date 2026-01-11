@@ -1,6 +1,7 @@
 package com.dreamwork.core;
 
 import com.dreamwork.core.hook.HookManager;
+import com.dreamwork.core.item.SetEffectManager;
 import com.dreamwork.core.job.JobManager;
 import com.dreamwork.core.listener.*;
 import com.dreamwork.core.manager.Manager;
@@ -9,7 +10,7 @@ import com.dreamwork.core.stat.InventoryScanner;
 import com.dreamwork.core.stat.StatManager;
 import com.dreamwork.core.storage.StorageManager;
 import com.dreamwork.core.storage.AutoSaveScheduler;
-import com.dreamwork.core.task.AutoSaveTask;
+
 import com.dreamwork.core.gui.SmartInventory;
 import com.dreamwork.core.gui.provider.JobSelectionProvider;
 import com.dreamwork.core.gui.provider.StatProfileProvider;
@@ -72,29 +73,26 @@ public final class DreamWorkCore extends JavaPlugin {
     /** 스킬 매니저 */
     private SkillManager skillManager;
 
+    private SetEffectManager setEffectManager;
+    private com.dreamwork.core.rank.RankManager rankManager;
+
     /** 아이템 팩토리 */
     private ItemFactory itemFactory;
 
     /** UI 매니저 */
     private ActionBarManager actionBarManager;
+
+    /** 보스바 매니저 */
     private BossBarManager bossBarManager;
+
+    /** 스코어보드 HUD */
     private ScoreboardHUD scoreboardHUD;
 
-    /** 경제 매니저 */
+    /** 드롭 테이블 매니저 */
     private LootTableManager lootTableManager;
+    // ... (fields continue)
 
-    /**
-     * 플러그인 인스턴스를 반환합니다.
-     * 
-     * @return DreamWorkCore 인스턴스
-     * @throws IllegalStateException 플러그인이 초기화되지 않은 경우
-     */
-    public static DreamWorkCore getInstance() {
-        if (instance == null) {
-            throw new IllegalStateException("DreamWorkCore가 아직 초기화되지 않았습니다!");
-        }
-        return instance;
-    }
+    // ... (getInstance)
 
     @Override
     public void onEnable() {
@@ -132,6 +130,13 @@ public final class DreamWorkCore extends JavaPlugin {
         // 드롭 테이블 매니저
         lootTableManager = new LootTableManager(this);
 
+        // Vault 경제 연동
+        if (setupEconomy()) {
+            getLogger().info("Vault 경제 시스템 연동 성공!");
+        } else {
+            getLogger().warning("Vault를 찾을 수 없습니다. 경제 기능이 비활성화됩니다.");
+        }
+
         long endTime = System.currentTimeMillis();
         getLogger()
                 .info("DreamWork Core v" + getPluginMeta().getVersion() + " 활성화 완료! (" + (endTime - startTime) + "ms)");
@@ -139,42 +144,36 @@ public final class DreamWorkCore extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        // 매니저 비활성화 (역순)
         disableManagers();
-
-        getLogger().info("DreamWork Core 비활성화 완료!");
-        instance = null;
+        getLogger().info("DreamWork Core가 비활성화되었습니다.");
     }
 
     /**
      * 기본 리소스 파일들을 저장합니다.
      */
     private void saveDefaultResources() {
-        // jobs/miner.yml 기본 파일 저장
-        if (!new java.io.File(getDataFolder(), "jobs/miner.yml").exists()) {
-            saveResource("jobs/miner.yml", false);
-        }
-        // quests/daily.yml 기본 파일 저장
-        if (!new java.io.File(getDataFolder(), "quests/daily.yml").exists()) {
-            saveResource("quests/daily.yml", false);
-        }
-        // items.yml 기본 파일 저장
-        if (!new java.io.File(getDataFolder(), "items.yml").exists()) {
-            saveResource("items.yml", false);
-        }
-        // drops.yml 기본 파일 저장
-        if (!new java.io.File(getDataFolder(), "drops.yml").exists()) {
-            saveResource("drops.yml", false);
-        }
+        // 직업 설정
+        saveResource("jobs/miner.yml", false);
+        saveResource("jobs/farmer.yml", false);
+        saveResource("jobs/hunter.yml", false);
+        saveResource("jobs/fisher.yml", false);
+
+        // 퀘스트 설정
+        saveResource("quests/daily.yml", false);
+        saveResource("quests/weekly.yml", false);
+
+        // 데이터 파일
+        saveResource("drops.yml", false);
+        saveResource("items.yml", false);
+        saveResource("sets.yml", false);
     }
 
     /**
      * 모든 매니저를 초기화합니다.
      */
     private void initializeManagers() {
-        // 저장소 매니저 (가장 먼저 초기화)
-        storageManager = new StorageManager(this);
-        registerManager(storageManager);
+        // 저장소 매니저 초기화
+        this.storageManager = new StorageManager(this);
 
         // 외부 플러그인 연동 매니저
         hookManager = new HookManager(this);
@@ -184,20 +183,28 @@ public final class DreamWorkCore extends JavaPlugin {
         statManager = new StatManager(this);
         registerManager(statManager);
 
-        // 직업 매니저 (스탯 매니저 이후)
+        // 직업 매니저
         jobManager = new JobManager(this);
         registerManager(jobManager);
 
-        // 퀸스트 매니저
+        // 퀘스트 매니저
         questManager = new QuestManager(this);
         registerManager(questManager);
 
-        // 장비 스캐너 (리스너로도 동작)
+        // 장비 스캐너
         inventoryScanner = new InventoryScanner(this);
 
         // 스킬 매니저
         skillManager = new SkillManager(this);
         registerManager(skillManager);
+
+        // 세트 효과 매니저
+        setEffectManager = new SetEffectManager(this);
+        registerManager(setEffectManager);
+
+        // 랭킹 매니저
+        rankManager = new com.dreamwork.core.rank.RankManager(this);
+        registerManager(rankManager);
 
         // 아이템 팩토리
         itemFactory = new ItemFactory(this);
@@ -238,6 +245,7 @@ public final class DreamWorkCore extends JavaPlugin {
      */
     private void registerListeners() {
         // 플레이어 데이터 로드/저장 리스너
+        getServer().getPluginManager().registerEvents(new com.dreamwork.core.listener.SkillEffectListener(this), this);
         getServer().getPluginManager().registerEvents(new PlayerDataListener(this), this);
 
         // 직업 활동 이벤트 리스너
@@ -398,6 +406,32 @@ public final class DreamWorkCore extends JavaPlugin {
                     target.getInventory().addItem(item);
                     sendMessage(sender, "&a" + target.getName() + "에게 " + itemId + " x" + amount + " 지급!");
                 }
+                case "rank" -> {
+                    if (!(sender instanceof org.bukkit.entity.Player player)) {
+                        sendMessage(sender, "&c플레이어만 사용할 수 있습니다.");
+                        return true;
+                    }
+
+                    if (rankManager == null) {
+                        sendMessage(sender, "&c랭킹 시스템이 비활성화되어 있습니다.");
+                        return true;
+                    }
+
+                    // 내 순위
+                    int myRank = rankManager.getPlayerRank(player.getUniqueId());
+                    String rankStr = (myRank > 0) ? myRank + "위" : "순위권 밖";
+                    sendMessage(sender, "&6=== 나의 순위: &e" + rankStr + " &6===");
+
+                    // Top 10
+                    sendMessage(sender, "&6=== TOP 10 랭커 ===");
+                    java.util.List<com.dreamwork.core.rank.RankManager.RankEntry> topRankers = rankManager
+                            .getTopRankers(10);
+                    for (int i = 0; i < topRankers.size(); i++) {
+                        com.dreamwork.core.rank.RankManager.RankEntry entry = topRankers.get(i);
+                        sendMessage(sender, "&e" + (i + 1) + "위. &f" + entry.getName() +
+                                " &7(Lv." + entry.getLevel() + ") &8- " + entry.getJob());
+                    }
+                }
                 default -> sendMessage(sender, getMessage("unknown-command"));
             }
             return true;
@@ -446,6 +480,27 @@ public final class DreamWorkCore extends JavaPlugin {
         return storageManager;
     }
 
+    // ==================== Vault Integration ====================
+
+    private static net.milkbowl.vault.economy.Economy econ = null;
+
+    private boolean setupEconomy() {
+        if (getServer().getPluginManager().getPlugin("Vault") == null) {
+            return false;
+        }
+        org.bukkit.plugin.RegisteredServiceProvider<net.milkbowl.vault.economy.Economy> rsp = getServer()
+                .getServicesManager().getRegistration(net.milkbowl.vault.economy.Economy.class);
+        if (rsp == null) {
+            return false;
+        }
+        econ = rsp.getProvider();
+        return econ != null;
+    }
+
+    public static net.milkbowl.vault.economy.Economy getEconomy() {
+        return econ;
+    }
+
     /**
      * 외부 플러그인 연동 매니저를 반환합니다.
      * 
@@ -491,6 +546,10 @@ public final class DreamWorkCore extends JavaPlugin {
         return skillManager;
     }
 
+    public SetEffectManager getSetEffectManager() {
+        return setEffectManager;
+    }
+
     /**
      * 아이템 팩토리를 반환합니다.
      * 
@@ -498,5 +557,41 @@ public final class DreamWorkCore extends JavaPlugin {
      */
     public ItemFactory getItemFactory() {
         return itemFactory;
+    }
+
+    /**
+     * 액션바 매니저를 반환합니다.
+     * 
+     * @return ActionBarManager 인스턴스
+     */
+    public ActionBarManager getActionBarManager() {
+        return actionBarManager;
+    }
+
+    /**
+     * 보스바 매니저를 반환합니다.
+     * 
+     * @return BossBarManager 인스턴스
+     */
+    public BossBarManager getBossBarManager() {
+        return bossBarManager;
+    }
+
+    /**
+     * 스코어보드 HUD를 반환합니다.
+     * 
+     * @return ScoreboardHUD 인스턴스
+     */
+    public ScoreboardHUD getScoreboardHUD() {
+        return scoreboardHUD;
+    }
+
+    /**
+     * 드롭 테이블 매니저를 반환합니다.
+     * 
+     * @return LootTableManager 인스턴스
+     */
+    public LootTableManager getLootTableManager() {
+        return lootTableManager;
     }
 }

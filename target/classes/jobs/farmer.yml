@@ -1,0 +1,36 @@
+id: "farmer"
+display: "농부"
+description: "농작물을 수확하고 가축을 길러 경험치를 얻는 직업"
+icon: GOLDEN_HOE
+max_level: 100
+
+exp_formula:
+  base: 100
+  exponent: 1.4
+
+exp_sources:
+  block_break:
+    WHEAT: 5
+    CARROTS: 5
+    POTATOES: 5
+    BEETROOTS: 5
+    MELON: 8
+    PUMPKIN: 8
+  
+  interact:
+    # 수확 상호작용 (우클릭 수확 플러그인 호환 필요)
+    HARVEST: 5
+
+rewards:
+  10:
+    message: "&a[농부] &f비옥한 손길(Passive)을 얻었습니다! (수확량 증가)"
+    commands:
+      - "money give %player% 500"
+  30:
+    message: "&a[농부] &6스프링클러(Active) 스킬을 배웠습니다!"
+    commands:
+      - "dw skill unlock %player% sprinkler"
+
+stats_per_level:
+  con: 1.0
+  luck: 0.5

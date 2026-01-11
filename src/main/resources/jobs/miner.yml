@@ -1,114 +1,182 @@
-# ================================================================
-# 광부 (Miner) 직업 설정 파일
-# DreamWork Core - 직업 시스템
-# ================================================================
-
-# 직업 고유 ID (소문자)
-id: miner
-
-# 표시 이름
-display: "광부"
-
-# 직업 설명
-description: "광물을 채굴하여 경험치를 획득하는 직업입니다."
-
-# GUI 아이콘 (Material 이름)
-icon: IRON_PICKAXE
-
-# 최대 레벨
+id: "miner"
+display_name: "광부"
 max_level: 100
+exp_formula: "100 + (level * 25) + (level^2 * 5)"
 
-# 경험치 공식: base * level^exponent
-# 예: 레벨 10에 필요한 경험치 = 100 * 10^1.5 ≈ 3162
-exp_formula:
-  base: 100
-  exponent: 1.5
+# 경험치 획득처
+triggers:
+  # 일반 광물
+  - type: BLOCK_BREAK
+    target: STONE
+    amount: 1.0
+  - type: BLOCK_BREAK
+    target: COBBLESTONE
+    amount: 0.5
+  - type: BLOCK_BREAK
+    target: DEEPSLATE
+    amount: 1.5
+  - type: BLOCK_BREAK
+    target: DIORITE
+    amount: 0.5
+  - type: BLOCK_BREAK
+    target: ANDESITE
+    amount: 0.5
+  - type: BLOCK_BREAK
+    target: GRANITE
+    amount: 0.5
+  - type: BLOCK_BREAK
+    target: TUFF
+    amount: 0.5
+  
+  # 석탄 계열
+  - type: BLOCK_BREAK
+    target: COAL_ORE
+    amount: 5.0
+  - type: BLOCK_BREAK
+    target: DEEPSLATE_COAL_ORE
+    amount: 6.0
 
-# 경험치 소스 (행동별 경험치 획득량)
-exp_sources:
-  # 블럭 파괴 시 획득 경험치
-  block_break:
-    # 일반 광물
-    STONE: 0.5
-    COBBLESTONE: 0.3
-    DEEPSLATE: 0.8
-    
-    # 석탄
-    COAL_ORE: 3
-    DEEPSLATE_COAL_ORE: 4
-    
-    # 철
-    IRON_ORE: 8
-    DEEPSLATE_IRON_ORE: 10
-    
-    # 구리
-    COPPER_ORE: 5
-    DEEPSLATE_COPPER_ORE: 6
-    
-    # 금
-    GOLD_ORE: 15
-    DEEPSLATE_GOLD_ORE: 18
-    NETHER_GOLD_ORE: 12
-    
-    # 에메랄드
-    EMERALD_ORE: 40
-    DEEPSLATE_EMERALD_ORE: 50
-    
-    # 다이아몬드
-    DIAMOND_ORE: 50
-    DEEPSLATE_DIAMOND_ORE: 60
-    
-    # 레드스톤 & 라피스
-    REDSTONE_ORE: 8
-    DEEPSLATE_REDSTONE_ORE: 10
-    LAPIS_ORE: 10
-    DEEPSLATE_LAPIS_ORE: 12
-    
-    # 네더라이트 (고급)
-    ANCIENT_DEBRIS: 100
+  # 철 계열
+  - type: BLOCK_BREAK
+    target: IRON_ORE
+    amount: 10.0
+  - type: BLOCK_BREAK
+    target: DEEPSLATE_IRON_ORE
+    amount: 12.0
+  - type: BLOCK_BREAK
+    target: RAW_IRON_BLOCK
+    amount: 20.0
 
-# 레벨당 스탯 증가량
-stats_per_level:
-  # 힘: 레벨당 +1
-  str: 1
-  # 체력: 레벨당 +0.5
-  con: 0.5
+  # 구리 계열
+  - type: BLOCK_BREAK
+    target: COPPER_ORE
+    amount: 8.0
+  - type: BLOCK_BREAK
+    target: DEEPSLATE_COPPER_ORE
+    amount: 10.0
 
-# 레벨별 보상
+  # 금 계열
+  - type: BLOCK_BREAK
+    target: GOLD_ORE
+    amount: 20.0
+  - type: BLOCK_BREAK
+    target: DEEPSLATE_GOLD_ORE
+    amount: 25.0
+  - type: BLOCK_BREAK
+    target: NETHER_GOLD_ORE
+    amount: 15.0
+
+  # 레드스톤 계열
+  - type: BLOCK_BREAK
+    target: REDSTONE_ORE
+    amount: 12.0
+  - type: BLOCK_BREAK
+    target: DEEPSLATE_REDSTONE_ORE
+    amount: 15.0
+
+  # 청금석 계열
+  - type: BLOCK_BREAK
+    target: LAPIS_ORE
+    amount: 15.0
+  - type: BLOCK_BREAK
+    target: DEEPSLATE_LAPIS_ORE
+    amount: 18.0
+
+  # 다이아몬드 계열
+  - type: BLOCK_BREAK
+    target: DIAMOND_ORE
+    amount: 50.0
+  - type: BLOCK_BREAK
+    target: DEEPSLATE_DIAMOND_ORE
+    amount: 60.0
+
+  # 에메랄드 계열
+  - type: BLOCK_BREAK
+    target: EMERALD_ORE
+    amount: 100.0
+  - type: BLOCK_BREAK
+    target: DEEPSLATE_EMERALD_ORE
+    amount: 120.0
+
+  # 네더 광물
+  - type: BLOCK_BREAK
+    target: NETHER_QUARTZ_ORE
+    amount: 15.0
+  - type: BLOCK_BREAK
+    target: ANCIENT_DEBRIS
+    amount: 200.0
+
+# 레벨업 보상
 rewards:
-  # 레벨 10 달성 보상
-  10:
-    message: "&a[광부] &f10레벨 달성! &6철 곡괭이&f를 획득했습니다."
+  level_10:
+    message: "&e[광부] &f단단한 피부(Passive)가 해금되었습니다! (받는 물리 데미지 5% 감소)"
+    stats:
+      CON: 5
+      STR: 2
+    skill_unlock: "tough_skin"
+
+  level_30:
+    message: "&e[광부] &f슈퍼 히트(Active)를 배웠습니다! (광물 즉시 제련)"
+    stats:
+      CON: 10
+      STR: 5
+    skill_unlock: "superheat"
+
+  level_50:
+    message: "&e[광부] &f광맥 발견(Passive) 능력을 깨달았습니다!"
+    stats:
+      CON: 15
+      STR: 8
+    skill_unlock: "miner_blast"
+
+  level_80:
+    message: "&e[광부] &6전설의 광부&f 칭호를 획득했습니다!"
+    stats:
+      CON: 20
+      STR: 10
+    money: 100000
+    skill_unlock: "gem_detector"
+
+  level_100:
+    message: "&e[광부] &c마스터 광부&f 칭호를 획득했습니다!"
+    stats:
+      CON: 30
+      STR: 15
+    money: 500000
     commands:
-      - "give %player% iron_pickaxe 1"
-      - "give %player% torch 32"
-  
-  # 레벨 25 달성 보상
-  25:
-    message: "&a[광부] &f25레벨 달성! &b야간 투시 포션&f을 획득했습니다."
-    commands:
-      - "give %player% potion{Potion:night_vision} 3"
-      - "give %player% diamond 3"
-  
-  # 레벨 50 달성 보상
-  50:
-    message: "&a[광부] &f50레벨 달성! &6다이아몬드 곡괭이&f와 특별 보상을 획득했습니다."
-    commands:
-      - "give %player% diamond_pickaxe 1"
-      - "give %player% diamond 10"
-      - "eco give %player% 10000"
-  
-  # 레벨 75 달성 보상
-  75:
-    message: "&a[광부] &f75레벨 달성! &d인챈트된 다이아 곡괭이&f를 획득했습니다."
-    commands:
-      - "give %player% diamond_pickaxe{Enchantments:[{id:efficiency,lvl:3},{id:fortune,lvl:2}]} 1"
-      - "eco give %player% 25000"
-  
-  # 레벨 100 달성 (마스터)
-  100:
-    message: "&6&l[광부 마스터] &f축하합니다! 광부 직업을 마스터했습니다!"
-    commands:
-      - "give %player% netherite_pickaxe{Enchantments:[{id:efficiency,lvl:5},{id:fortune,lvl:3}]} 1"
-      - "eco give %player% 100000"
       - "lp user %player% parent add master_miner"
+
+# 레벨별 스탯 상승 (1레벨당)
+stats_per_level:
+  CON: 1.0
+  STR: 0.5
+
+# 스킬 목록
+skills:
+  tough_skin:
+    name: "단단한 피부"
+    type: PASSIVE
+    unlock_level: 10
+    description: "물리 데미지를 5% 감소시킵니다."
+  
+  superheat:
+    name: "슈퍼 히트"
+    type: ACTIVE
+    unlock_level: 30
+    cooldown: 300
+    mana_cost: 30
+    description: "30초간 채광한 광물을 즉시 제련 상태로 획득합니다."
+  
+  miner_blast:
+    name: "광맥 발견"
+    type: ACTIVE
+    unlock_level: 50
+    cooldown: 30
+    mana_cost: 20
+    description: "주변 3×3×3 범위의 광석을 한 번에 채굴합니다."
+  
+  gem_detector:
+    name: "보석 탐지"
+    type: PASSIVE
+    unlock_level: 80
+    description: "돌 채광 시 0.1% 확률로 랜덤 보석을 드롭합니다."

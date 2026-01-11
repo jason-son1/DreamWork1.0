@@ -1,0 +1,35 @@
+id: "fisher"
+display: "어부"
+description: "낚시를 통해 경험치를 얻고 재화를 버는 직업"
+icon: FISHING_ROD
+max_level: 100
+
+exp_formula:
+  base: 100
+  exponent: 1.5
+
+exp_sources:
+  fishing:
+    COD: 10
+    SALMON: 15
+    PUFFERFISH: 30
+    TROPICAL_FISH: 50
+    TREASURE: 100
+
+rewards:
+  10:
+    message: "&b[어부] &f인내심(Passive) 능력을 깨달았습니다! (입질 시간 단축)"
+    commands:
+      - "dw skill unlock %player% patience"
+  30:
+    message: "&b[어부] &e황금 낚싯바늘(Passive) 능력을 얻었습니다! (희귀 물고기 확률 증가)"
+    commands:
+      - "dw skill unlock %player% golden_hook"
+  50:
+    message: "&b[어부] &c강태공&f 칭호를 획득했습니다!"
+    commands:
+      - "lp user %player% parent add fisher_expert"
+
+stats_per_level:
+  dex: 1.0
+  int: 0.5

@@ -6,10 +6,14 @@ package com.dreamwork.core.job.engine;
 public enum TriggerType {
     BLOCK_BREAK,
     FISH_CATCH,
-    MOB_KILL,
+    ENTITY_KILL, // MOB_KILL 대신 사용
+    MOB_KILL, // 호환성 유지
     HARVEST,
     CRAFT_ITEM,
-    EAT_FOOD;
+    EAT_FOOD,
+    TRAVEL, // 이동
+    QUEST_COMPLETE, // 퀘스트 완료
+    BREED_ANIMAL; // 동물 번식
 
     /**
      * 문자열로부터 트리거 타입을 반환합니다. 대소문자 무시.
