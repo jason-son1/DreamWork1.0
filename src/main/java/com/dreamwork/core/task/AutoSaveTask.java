@@ -4,8 +4,8 @@ import com.dreamwork.core.DreamWorkCore;
 import com.dreamwork.core.job.JobManager;
 import com.dreamwork.core.job.UserJobData;
 import com.dreamwork.core.stat.StatManager;
-import com.dreamwork.core.storage.StorageManager;
-import com.dreamwork.core.storage.UserData;
+import com.dreamwork.core.database.StorageManager;
+import com.dreamwork.core.model.UserData;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -44,18 +44,28 @@ public class AutoSaveTask extends BukkitRunnable {
 
     private void savePlayerData(Player player) {
         try {
-            UserData data = new UserData(player.getUniqueId(), player.getName());
+            // 캐시된 데이터 가져오기 (데이터 손실 방지)
+            UserData data = storageManager.getUserData(player.getUniqueId());
+            if (data == null) {
+                // 캐시에 없으면 새로 생성 (비상시)
+                data = new UserData(player.getUniqueId(), player.getName());
+            }
 
-            // 직업 데이터
+            // 직업 데이터 동기화
             UserJobData jobData = jobManager.getUserJob(player.getUniqueId());
-            data.setJobData(jobData.copy());
+            if (jobData != null) {
+                data.setJobData(jobData.copy());
+            }
 
-            // 스탯 데이터
+            // 스탯 데이터 동기화
             StatManager.PlayerStats stats = statManager.getStats(player.getUniqueId());
-            data.setStats(stats);
+            if (stats != null) {
+                data.setStats(stats);
+            }
 
             // 비동기 저장
-            storageManager.saveUserJsonAsync(player.getUniqueId(), data);
+            data.markDirty();
+            storageManager.saveUserAsync(data);
 
         } catch (Exception e) {
             plugin.getLogger().warning("자동 저장 실패: " + player.getName());

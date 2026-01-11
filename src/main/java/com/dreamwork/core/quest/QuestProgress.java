@@ -5,9 +5,12 @@ package com.dreamwork.core.quest;
  */
 public class QuestProgress {
 
-    private final String questId;
+    private String questId;
     private int currentProgress;
     private QuestStatus status;
+
+    public QuestProgress() {
+    }
 
     public QuestProgress(String questId) {
         this.questId = questId;

@@ -1,11 +1,11 @@
-package com.dreamwork.core.storage;
+package com.dreamwork.core.database;
 
 import com.dreamwork.core.DreamWorkCore;
+import com.dreamwork.core.model.UserData;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -33,7 +33,7 @@ public class AutoSaveScheduler extends BukkitRunnable {
      * 스케줄러를 시작합니다.
      */
     public void start() {
-        this.runTaskTimerAsynchronously(plugin, interval, interval);
+        this.runTaskTimer(plugin, interval, interval); // runTaskTimer for sync iteration, saveAsync for async IO
         plugin.getLogger().info("AutoSaveScheduler 시작됨 (주기: " + (interval / 20) + "초)");
     }
 
@@ -41,19 +41,13 @@ public class AutoSaveScheduler extends BukkitRunnable {
     public void run() {
         AtomicInteger savedCount = new AtomicInteger(0);
 
+        // Iterate online players (Sync safety)
         for (Player player : Bukkit.getOnlinePlayers()) {
             UserData data = storageManager.getUserData(player.getUniqueId());
 
             if (data != null && data.isDirty()) {
-                storageManager.saveAsync(player.getUniqueId(), data)
-                        .thenRun(() -> {
-                            data.clearDirty();
-                            savedCount.incrementAndGet();
-                        })
-                        .exceptionally(e -> {
-                            plugin.getLogger().warning("자동 저장 실패: " + player.getName());
-                            return null;
-                        });
+                storageManager.saveUserAsync(data); // This is async internally
+                savedCount.incrementAndGet();
             }
         }
 

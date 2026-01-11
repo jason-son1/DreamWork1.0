@@ -3,8 +3,9 @@ package com.dreamwork.core.ui;
 import com.dreamwork.core.DreamWorkCore;
 import com.dreamwork.core.job.JobManager;
 import com.dreamwork.core.job.UserJobData;
-import com.dreamwork.core.storage.StorageManager;
-import com.dreamwork.core.storage.UserData;
+import com.dreamwork.core.database.StorageManager;
+import com.dreamwork.core.model.UserData;
+import com.dreamwork.core.stat.StatManager;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -27,6 +28,7 @@ public class ScoreboardHUD {
     private final DreamWorkCore plugin;
     private final JobManager jobManager;
     private final StorageManager storageManager;
+    private final StatManager statManager;
 
     /** 플레이어별 스코어보드 */
     private final Map<UUID, Scoreboard> playerScoreboards = new ConcurrentHashMap<>();
@@ -35,6 +37,7 @@ public class ScoreboardHUD {
         this.plugin = plugin;
         this.jobManager = plugin.getJobManager();
         this.storageManager = plugin.getStorageManager();
+        this.statManager = plugin.getStatManager();
     }
 
     /**
@@ -75,6 +78,9 @@ public class ScoreboardHUD {
         UserJobData jobData = jobManager.getUserJob(uuid);
         UserData userData = storageManager.getUserData(uuid);
 
+        if (userData == null)
+            return; // 데이터 로드 전이면 패스
+
         int line = 10;
 
         // 공백
@@ -86,7 +92,7 @@ public class ScoreboardHUD {
         double exp = 0;
         double maxExp = 0;
 
-        if (jobData.hasJob()) {
+        if (jobData != null && jobData.hasJob()) {
             var job = jobManager.getJob(jobData.getJobId());
             if (job != null) {
                 jobName = job.getDisplayName();
@@ -98,14 +104,27 @@ public class ScoreboardHUD {
 
         setScore(objective, "§e직업: §f" + jobName, line--);
         setScore(objective, "§e레벨: §f" + level, line--);
-        setScore(objective, "§e경험치: §f" + String.format("%.0f", exp) + "§7/§f" + String.format("%.0f", maxExp), line--);
+        if (maxExp > 0) {
+            setScore(objective, "§e경험치: §f" + String.format("%.0f", exp) + "§7/§f" + String.format("%.0f", maxExp),
+                    line--);
+        } else {
+            setScore(objective, "§e경험치: §f-", line--);
+        }
 
         // 공백
         setScore(objective, "§8§m          ", line--);
 
         // 자원 정보
         double mana = userData.getCurrentMana();
-        double maxMana = userData.getMaxMana();
+
+        // Max Mana Calculation: 100 + (INT * 2)
+        int totalInt = 0;
+        StatManager.PlayerStats stats = statManager.getStats(uuid);
+        if (stats != null) {
+            totalInt = stats.getInt();
+        }
+
+        double maxMana = 100 + (totalInt * 2);
         setScore(objective, "§b기력: §f" + (int) mana + "§7/§f" + (int) maxMana, line--);
 
         // 경제 정보 (Vault 연동 시)
@@ -119,6 +138,8 @@ public class ScoreboardHUD {
     }
 
     private void setScore(Objective objective, String text, int score) {
+        if (text.length() > 40)
+            text = text.substring(0, 40); // Length safe
         objective.getScore(text).setScore(score);
     }
 

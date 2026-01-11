@@ -8,8 +8,8 @@ import com.dreamwork.core.manager.Manager;
 import com.dreamwork.core.quest.QuestManager;
 import com.dreamwork.core.stat.InventoryScanner;
 import com.dreamwork.core.stat.StatManager;
-import com.dreamwork.core.storage.StorageManager;
-import com.dreamwork.core.storage.AutoSaveScheduler;
+import com.dreamwork.core.database.StorageManager;
+import com.dreamwork.core.database.AutoSaveScheduler;
 
 import com.dreamwork.core.gui.SmartInventory;
 import com.dreamwork.core.gui.provider.JobSelectionProvider;
@@ -51,6 +51,9 @@ public final class DreamWorkCore extends JavaPlugin {
 
     /** 등록된 매니저 목록 */
     private final List<Manager> managers = new ArrayList<>();
+
+    /** 데이터베이스 매니저 */
+    private com.dreamwork.core.database.DatabaseManager databaseManager;
 
     /** 저장소 매니저 */
     private StorageManager storageManager;
@@ -145,6 +148,11 @@ public final class DreamWorkCore extends JavaPlugin {
     @Override
     public void onDisable() {
         disableManagers();
+
+        if (databaseManager != null) {
+            databaseManager.close();
+        }
+
         getLogger().info("DreamWork Core가 비활성화되었습니다.");
     }
 
@@ -172,8 +180,12 @@ public final class DreamWorkCore extends JavaPlugin {
      * 모든 매니저를 초기화합니다.
      */
     private void initializeManagers() {
+        // 데이터베이스 매니저 초기화
+        this.databaseManager = new com.dreamwork.core.database.DatabaseManager(this);
+        this.databaseManager.initialize();
+
         // 저장소 매니저 초기화
-        this.storageManager = new StorageManager(this);
+        this.storageManager = new StorageManager(this, databaseManager);
 
         // 외부 플러그인 연동 매니저
         hookManager = new HookManager(this);
@@ -519,6 +531,16 @@ public final class DreamWorkCore extends JavaPlugin {
         return statManager;
     }
 
+    /**
+     * 데이터베이스 매니저를 반환합니다.
+     * 
+     * @return 데이터베이스 매니저
+     */
+    public com.dreamwork.core.database.DatabaseManager getDatabaseManager() {
+        return databaseManager;
+    }
+
+    // ... EXISTING GETTERS ...
     /**
      * 직업 매니저를 반환합니다.
      * 

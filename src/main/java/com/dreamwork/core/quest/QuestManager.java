@@ -345,6 +345,14 @@ public class QuestManager extends Manager {
         return playerProgress.getOrDefault(uuid, Collections.emptyMap());
     }
 
+    public void loadQuestProgress(UUID uuid, Map<String, QuestProgress> progress) {
+        if (progress == null) {
+            playerProgress.remove(uuid);
+        } else {
+            playerProgress.put(uuid, progress);
+        }
+    }
+
     private int parseInt(String str, int defaultValue) {
         try {
             return Integer.parseInt(str);

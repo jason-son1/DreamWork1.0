@@ -1,45 +1,107 @@
 id: "hunter"
-display: "사냥꾼"
-description: "몬스터를 사냥하여 경험치를 얻는 전투 직업"
-icon: BOW
+display_name: "사냥꾼"
 max_level: 100
+exp_formula: "150 + (level * 30) + (level^2 * 5)"
 
-exp_formula:
-  base: 100
-  exponent: 1.6
-
-exp_sources:
-  kill_mob:
-    ZOMBIE: 10
-    SKELETON: 12
-    SPIDER: 15
-    CREEPER: 20
-    ENDERMAN: 50
-    WITCH: 40
-    BLAZE: 60
-    WITHER_SKELETON: 80
-    ENDER_DRAGON: 1000
-    WITHER: 1000
+triggers:
+  - type: ENTITY_KILL
+    target: ZOMBIE
+    amount: 10.0
+  - type: ENTITY_KILL
+    target: SKELETON
+    amount: 10.0
+  - type: ENTITY_KILL
+    target: SPIDER
+    amount: 12.0
+  - type: ENTITY_KILL
+    target: CREEPER
+    amount: 15.0
+  - type: ENTITY_KILL
+    target: ENDERMAN
+    amount: 30.0
+  - type: ENTITY_KILL
+    target: WITCH
+    amount: 25.0
+  - type: ENTITY_KILL
+    target: BLAZE
+    amount: 40.0
+  - type: ENTITY_KILL
+    target: WITHER_SKELETON
+    amount: 50.0
+  - type: ENTITY_KILL
+    target: GHAST
+    amount: 60.0
+  - type: ENTITY_KILL
+    target: IRON_GOLEM
+    amount: 100.0
+  - type: ENTITY_KILL
+    target: WARDEN
+    amount: 500.0
+  - type: ENTITY_KILL
+    target: WITHER
+    amount: 1000.0
+  - type: ENTITY_KILL
+    target: ENDER_DRAGON
+    amount: 2000.0
 
 rewards:
-  10:
-    message: "&c[사냥꾼] &f약점 포착(Passive) 능력을 깨달았습니다! (치명타 확률 증가)"
-    # 약점 포착은 별도의 스킬 클래스 없이 기본 스탯 보너스로 처리하거나, 추후 추가
-    commands:
-      - "money give %player% 1000"
-  30:
-    message: "&c[사냥꾼] &6아드레날린(Active) 스킬을 배웠습니다!"
-    commands:
-      - "dw skill unlock %player% adrenaline"
-  50:
-    message: "&c[사냥꾼] &f헤드헌터(Passive) 능력을 얻었습니다! (머리 드롭)"
-    commands:
-      - "dw skill unlock %player% head_hunter"
-  80:
-    message: "&c[사냥꾼] &4몬스터 학살자&f 칭호를 획득했습니다!"
-    commands:
-      - "lp user %player% parent add hunter_master"
+  level_10:
+    message: "&c[사냥꾼] &f약점 포착(Passive) 기술을 익혔습니다! (치명타 확률 5% 증가)"
+    stats:
+      STR: 3
+      DEX: 3
+    skill_unlock: "weakness_spot"
+  
+  level_30:
+    message: "&c[사냥꾼] &f아드레날린(Active)이 분비됩니다! (이동속도/공격속도 증가)"
+    stats:
+      STR: 6
+      DEX: 6
+    skill_unlock: "adrenaline"
+
+  level_50:
+    message: "&c[사냥꾼] &f헤드헌터(Passive)가 되었습니다! (몹 머리 드롭)"
+    stats:
+      STR: 10
+      DEX: 8
+    skill_unlock: "headhunter"
+
+  level_80:
+    message: "&c[사냥꾼] &4학살자&f 칭호를 획득했습니다!"
+    stats:
+      STR: 15
+      DEX: 10
+    money: 100000
+    skill_unlock: "slayer"
 
 stats_per_level:
-  str: 1.0
-  dex: 0.5
+  STR: 1.0
+  DEX: 0.5
+  CON: 0.5
+
+skills:
+  weakness_spot:
+    name: "약점 포착"
+    type: PASSIVE
+    unlock_level: 10
+    description: "치명타 확률이 5% 증가합니다."
+
+  adrenaline:
+    name: "아드레날린"
+    type: ACTIVE
+    unlock_level: 30
+    cooldown: 180
+    mana_cost: 40
+    description: "10초간 이동 속도 II, 성급함 II 버프를 얻습니다."
+
+  headhunter:
+    name: "헤드헌터"
+    type: PASSIVE
+    unlock_level: 50
+    description: "몬스터 처치 시 5% 확률로 해당 몬스터의 머리를 획득합니다."
+
+  slayer:
+    name: "학살자"
+    type: PASSIVE
+    unlock_level: 80
+    description: "체력이 30% 이하인 적에게 주는 데미지가 20% 증가합니다."

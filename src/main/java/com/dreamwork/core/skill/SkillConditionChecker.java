@@ -1,8 +1,8 @@
 package com.dreamwork.core.skill;
 
 import com.dreamwork.core.DreamWorkCore;
-import com.dreamwork.core.storage.StorageManager;
-import com.dreamwork.core.storage.UserData;
+import com.dreamwork.core.database.StorageManager;
+import com.dreamwork.core.model.UserData;
 import org.bukkit.entity.Player;
 
 /**
@@ -14,12 +14,10 @@ import org.bukkit.entity.Player;
  */
 public class SkillConditionChecker {
 
-    private final DreamWorkCore plugin;
     private final SkillManager skillManager;
     private final StorageManager storageManager;
 
     public SkillConditionChecker(DreamWorkCore plugin) {
-        this.plugin = plugin;
         this.skillManager = plugin.getSkillManager();
         this.storageManager = plugin.getStorageManager();
     }

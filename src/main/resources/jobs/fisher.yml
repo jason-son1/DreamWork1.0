@@ -1,35 +1,80 @@
 id: "fisher"
-display: "어부"
-description: "낚시를 통해 경험치를 얻고 재화를 버는 직업"
-icon: FISHING_ROD
+display_name: "낚시꾼"
 max_level: 100
+exp_formula: "100 + (level * 15) + (level^2 * 3)"
 
-exp_formula:
-  base: 100
-  exponent: 1.5
-
-exp_sources:
-  fishing:
-    COD: 10
-    SALMON: 15
-    PUFFERFISH: 30
-    TROPICAL_FISH: 50
-    TREASURE: 100
+triggers:
+  - type: FISH_CATCH
+    target: COD
+    amount: 10.0
+  - type: FISH_CATCH
+    target: SALMON
+    amount: 10.0
+  - type: FISH_CATCH
+    target: PUFFERFISH
+    amount: 25.0
+  - type: FISH_CATCH
+    target: TROPICAL_FISH
+    amount: 40.0
 
 rewards:
-  10:
-    message: "&b[어부] &f인내심(Passive) 능력을 깨달았습니다! (입질 시간 단축)"
-    commands:
-      - "dw skill unlock %player% patience"
-  30:
-    message: "&b[어부] &e황금 낚싯바늘(Passive) 능력을 얻었습니다! (희귀 물고기 확률 증가)"
-    commands:
-      - "dw skill unlock %player% golden_hook"
-  50:
-    message: "&b[어부] &c강태공&f 칭호를 획득했습니다!"
-    commands:
-      - "lp user %player% parent add fisher_expert"
+  level_10:
+    message: "&b[낚시꾼] &f인내심(Passive)을 길렀습니다! (낚시 대기 시간 감소)"
+    stats:
+      DEX: 3
+      INT: 3
+    skill_unlock: "patience"
+  
+  level_30:
+    message: "&b[낚시꾼] &f월척(Active)의 기운이 느껴집니다! (희귀 물고기 확률 증가)"
+    stats:
+      DEX: 6
+      INT: 5
+    skill_unlock: "big_catch"
+
+  level_50:
+    message: "&b[낚시꾼] &f바다의 행운(Passive)이 함께합니다! (낚싯대 내구도 보호)"
+    stats:
+      DEX: 10
+      INT: 8
+    skill_unlock: "ocean_luck"
+
+  level_80:
+    message: "&b[낚시꾼] &3강태공&f 칭호를 획득했습니다!"
+    stats:
+      DEX: 15
+      INT: 10
+    money: 100000
+    skill_unlock: "deep_sea_treasure"
 
 stats_per_level:
-  dex: 1.0
-  int: 0.5
+  DEX: 1.0
+  INT: 0.5
+  LUCK: 0.5
+
+skills:
+  patience:
+    name: "인내심"
+    type: PASSIVE
+    unlock_level: 10
+    description: "낚시 대기 시간이 10% 단축됩니다 (Lure 효과 증폭)."
+
+  big_catch:
+    name: "월척"
+    type: ACTIVE
+    unlock_level: 30
+    cooldown: 600
+    mana_cost: 50
+    description: "1분간 보물/희귀 물고기 획득 확률이 2배 증가합니다."
+
+  ocean_luck:
+    name: "바다의 행운"
+    type: PASSIVE
+    unlock_level: 50
+    description: "낚시 성공 시 10% 확률로 내구도가 소모되지 않습니다."
+
+  deep_sea_treasure:
+    name: "심해의 보물"
+    type: PASSIVE
+    unlock_level: 80
+    description: "낚시 시 아주 낮은 확률로 고대 주화(10,000골드)를 낚습니다."

@@ -1,12 +1,12 @@
 package com.dreamwork.core.rank;
 
 import com.dreamwork.core.DreamWorkCore;
-import com.dreamwork.core.job.UserJobData;
 import com.dreamwork.core.manager.Manager;
-import com.dreamwork.core.storage.UserData;
 import org.bukkit.Bukkit;
 
-import java.io.File;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
  * 랭킹 시스템 매니저
  * 
  * <p>
- * 유저 데이터 파일들을 주기적으로 스캔하여
+ * DB를 주기적으로 스캔하여
  * 종합 레벨과 경험치 기준으로 순위를 산정합니다.
  * </p>
  */
@@ -67,50 +67,49 @@ public class RankManager extends Manager {
     }
 
     /**
-     * 랭킹 업데이트 로직 (비동기 권장)
+     * 랭킹 업데이트 로직 (비동기)
      */
     private void updateRanking() {
-        if (plugin.getStorageManager() == null)
-            return;
-
-        File folder = plugin.getStorageManager().getUserdataFolder();
-        if (folder == null || !folder.exists())
-            return;
-
-        File[] files = folder.listFiles((dir, name) -> name.endsWith(".json"));
-        if (files == null)
+        if (plugin.getDatabaseManager() == null)
             return;
 
         List<RankEntry> tempRanking = new ArrayList<>();
 
-        for (File file : files) {
-            try {
-                // UserData를 직접 로드하지 않고 필요한 필드만 읽으면 좋겠지만,
-                // StorageManager 구조상 readFile 사용이 어려우므로 전체 로드 (비동기라 괜찮음)
-                // Gson 인스턴스 접근 필요
-                UserData data = plugin.getStorageManager().getGson().fromJson(
-                        java.nio.file.Files.readString(file.toPath()), UserData.class);
+        try (Connection conn = plugin.getDatabaseManager().getConnection()) {
+            // 레벨 내림차순, 경험치 내림차순으로 상위 100명 조회
+            String sql = "SELECT uuid, name, job_id, job_level, job_exp FROM dw_users ORDER BY job_level DESC, job_exp DESC LIMIT 100";
 
-                if (data != null && data.getJobData() != null && data.getJobData().hasJob()) {
-                    UserJobData jobData = data.getJobData();
+            try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                ResultSet rs = pstmt.executeQuery();
+
+                while (rs.next()) {
+                    String uuidStr = rs.getString("uuid");
+                    String name = rs.getString("name");
+                    String jobId = rs.getString("job_id");
+                    int level = rs.getInt("job_level");
+                    double exp = rs.getDouble("job_exp");
+
+                    if (jobId == null || jobId.isEmpty())
+                        continue;
+
                     tempRanking.add(new RankEntry(
-                            data.getUuid(),
-                            data.getPlayerName(),
-                            jobData.getJobId(),
-                            jobData.getLevel(),
-                            jobData.getCurrentExp(), // 수정됨
-                            calculateTotalScore(jobData.getLevel(), jobData.getCurrentExp()) // 수정됨
-                    ));
+                            UUID.fromString(uuidStr),
+                            name,
+                            jobId,
+                            level,
+                            exp,
+                            calculateTotalScore(level, exp)));
                 }
-            } catch (Exception e) {
-                // 파일 읽기 오류 무시
             }
+        } catch (Exception e) {
+            plugin.getLogger().warning("랭킹 업데이트 중 오류 발생: " + e.getMessage());
+            e.printStackTrace();
         }
 
-        // 정렬 (점수 내림차순)
+        // 정렬 (점수 내림차순) - DB에서 정렬해오지만, Score 계산식이 다르면 여기서 다시 정렬
         tempRanking.sort((a, b) -> Double.compare(b.getScore(), a.getScore()));
 
-        // 캐시 업데이트 (동기화 필요없음, 리스트 교체 방식)
+        // 캐시 업데이트
         synchronized (cachedRanking) {
             cachedRanking.clear();
             cachedRanking.addAll(tempRanking);
@@ -130,7 +129,7 @@ public class RankManager extends Manager {
     }
 
     private double calculateTotalScore(int level, double exp) {
-        // 레벨 * 1000 + 경험치 (간단한 스코어링)
+        // 레벨 * 10000 + 경험치
         return (level * 100000.0) + exp;
     }
 

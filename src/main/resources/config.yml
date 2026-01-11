@@ -55,3 +55,21 @@ quests:
   daily-quest-count: 3
   # 일일 퀘스트 재설정 시간 (서버 시간 기준 0시)
   reset-hour: 0
+
+# 데이터베이스 설정
+database:
+  # 데이터 저장 방식 선택 (SQLITE 또는 MYSQL)
+  # SQLITE: 플러그인 폴더 내 파일에 저장 (소규모 서버/테스트용)
+  # MYSQL: 외부 MySQL 데이터베이스에 저장 (대규모 서버/네트워크용)
+  type: "SQLITE"
+  
+  # MYSQL 사용 시 설정
+  host: "localhost"
+  port: 3306
+  database: "dreamwork"
+  username: "root"
+  password: ""
+  
+  # 커넥션 풀 설정 (고급 사용자용)
+  pool-size: 10
+  connection-timeout: 30000

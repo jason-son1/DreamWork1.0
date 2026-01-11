@@ -1,8 +1,9 @@
 package com.dreamwork.core.stat.resource;
 
 import com.dreamwork.core.DreamWorkCore;
-import com.dreamwork.core.storage.StorageManager;
-import com.dreamwork.core.storage.UserData;
+import com.dreamwork.core.database.StorageManager;
+import com.dreamwork.core.model.UserData;
+import com.dreamwork.core.stat.StatManager;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -36,10 +37,18 @@ public class ManaRegenTask extends BukkitRunnable {
     public void run() {
         for (Player player : Bukkit.getOnlinePlayers()) {
             UserData data = storageManager.getUserData(player.getUniqueId());
+            if (data == null)
+                continue;
 
             double current = data.getCurrentMana();
-            double max = data.getMaxMana();
-            double regen = data.getManaRegen();
+
+            // Use StatManager to calculate derived stats
+            StatManager statManager = plugin.getStatManager();
+            if (statManager == null)
+                continue;
+
+            double max = statManager.calculateMaxMana(player);
+            double regen = statManager.calculateManaRegen(player);
 
             if (current < max) {
                 double newMana = Math.min(current + regen, max);

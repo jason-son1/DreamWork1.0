@@ -325,6 +325,28 @@ public class StatManager extends Manager {
         return stats.getLuck() * 0.5;
     }
 
+    /**
+     * 최대 마나를 계산합니다.
+     * 
+     * @param player 플레이어
+     * @return 최대 마나
+     */
+    public double calculateMaxMana(Player player) {
+        PlayerStats stats = getStats(player);
+        return 100.0 + (stats.getInt() * 10.0);
+    }
+
+    /**
+     * 마나 재생량을 계산합니다.
+     * 
+     * @param player 플레이어
+     * @return 초당 마나 재생량
+     */
+    public double calculateManaRegen(Player player) {
+        PlayerStats stats = getStats(player);
+        return 5.0 + (stats.getInt() * 0.5);
+    }
+
     // ==================== 내부 클래스: PlayerStats ====================
 
     /**

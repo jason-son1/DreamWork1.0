@@ -1,269 +1,124 @@
-# DreamWork Core 일일 퀘스트 풀
-# 매일 자정에 초기화되며, 여기서 랜덤으로 3개 선택
-
 daily_quests:
-  # ==================== 채광 퀘스트 ====================
+  # 광부 퀘스트
   dq_mining_iron:
-    name: "아침의 곡괭이질"
-    desc: "철 광석을 30개 캐세요."
+    name: "철기 시대"
+    desc: "철 광석 30개를 채광하세요."
     difficulty: EASY
-    type: DAILY
-    requirement:
-      type: BLOCK_BREAK
-      target: IRON_ORE
-      amount: 30
-    reward:
+    type: BLOCK_BREAK
+    target: IRON_ORE
+    amount: 30
+    rewards:
       money: 500
-      exp: 100
-      items:
-        - "COAL:10"
-        - "COOKED_BEEF:5"
+      exp_job: 100
+      item: "COAL 16"
 
   dq_mining_diamond:
-    name: "일확천금의 꿈"
-    desc: "다이아몬드 원석을 5개 발견하세요."
-    difficulty: HARD
-    type: DAILY
-    requirement:
-      type: BLOCK_BREAK
-      target: DIAMOND_ORE
-      amount: 5
-    reward:
+    name: "반짝이는 것"
+    desc: "다이아몬드 원석 5개를 찾으세요."
+    difficulty: NORMAL
+    type: BLOCK_BREAK
+    target: DIAMOND_ORE
+    amount: 5
+    rewards:
       money: 2000
-      exp: 500
-      items:
-        - "GOLDEN_APPLE:1"
+      exp_job: 300
+      item: "IRON_INGOT 10"
 
-  dq_mining_coal:
-    name: "에너지 비축"
-    desc: "석탄을 50개 캐세요."
-    difficulty: EASY
-    type: DAILY
-    requirement:
-      type: BLOCK_BREAK
-      target: COAL_ORE
-      amount: 50
-    reward:
-      money: 300
-      exp: 80
-
-  dq_mining_gold:
-    name: "황금빛 노다지"
-    desc: "금 광석을 15개 캐세요."
-    difficulty: NORMAL
-    type: DAILY
-    requirement:
-      type: BLOCK_BREAK
-      target: GOLD_ORE
-      amount: 15
-    reward:
-      money: 1200
-      exp: 250
-
-  dq_mining_emerald:
-    name: "에메랄드 헌터"
-    desc: "에메랄드 원석을 3개 캐세요."
+  dq_mining_obsidian:
+    name: "단단한 블록"
+    desc: "흑요석 10개를 채굴하세요."
     difficulty: HARD
-    type: DAILY
-    requirement:
-      type: BLOCK_BREAK
-      target: EMERALD_ORE
-      amount: 3
-    reward:
-      money: 2500
-      exp: 600
-
-  dq_mining_stone:
-    name: "채굴 일과"
-    desc: "돌을 200개 캐세요."
-    difficulty: EASY
-    type: DAILY
-    requirement:
-      type: BLOCK_BREAK
-      target: STONE
-      amount: 200
-    reward:
-      money: 200
-      exp: 50
-
-  # ==================== 낚시 퀘스트 ====================
-  dq_fishing_salmon:
-    name: "신선한 횟감"
-    desc: "연어를 10마리 낚으세요."
-    difficulty: NORMAL
-    type: DAILY
-    requirement:
-      type: FISH_CATCH
-      target: SALMON
-      amount: 10
-    reward:
-      money: 1000
-      exp: 200
-      items:
-        - "FISHING_ROD:1"
-
-  dq_fishing_cod:
-    name: "물고기 잡이"
-    desc: "대구를 20마리 낚으세요."
-    difficulty: EASY
-    type: DAILY
-    requirement:
-      type: FISH_CATCH
-      target: COD
-      amount: 20
-    reward:
-      money: 600
-      exp: 120
-
-  dq_fishing_tropical:
-    name: "열대어 수집가"
-    desc: "열대어를 5마리 낚으세요."
-    difficulty: HARD
-    type: DAILY
-    requirement:
-      type: FISH_CATCH
-      target: TROPICAL_FISH
-      amount: 5
-    reward:
-      money: 1800
-      exp: 400
-
-  dq_fishing_treasure:
-    name: "바다의 보물"
-    desc: "낚시로 보물을 1개 찾으세요."
-    difficulty: HARD
-    type: DAILY
-    requirement:
-      type: FISH_CATCH
-      target: BOW
-      amount: 1
-    reward:
-      money: 3000
-      exp: 700
-
-  # ==================== 사냥 퀘스트 ====================
-  dq_hunting_zombies:
-    name: "마을 정화"
-    desc: "좀비 50마리를 처치하세요."
-    difficulty: NORMAL
-    type: DAILY
-    requirement:
-      type: ENTITY_KILL
-      target: ZOMBIE
-      amount: 50
-    reward:
+    type: BLOCK_BREAK
+    target: OBSIDIAN
+    amount: 10
+    rewards:
       money: 1500
-      exp: 300
-      items:
-        - "ARROW:32"
+      exp_job: 250
+      item: "DIAMOND 1"
 
-  dq_hunting_skeletons:
-    name: "뼈다귀 수집"
-    desc: "스켈레톤 40마리를 처치하세요."
-    difficulty: NORMAL
-    type: DAILY
-    requirement:
-      type: ENTITY_KILL
-      target: SKELETON
-      amount: 40
-    reward:
-      money: 1400
-      exp: 280
-      items:
-        - "BONE:16"
-
-  dq_hunting_spiders:
-    name: "거미 사냥"
-    desc: "거미 30마리를 처치하세요."
+  # 농부 퀘스트
+  dq_farming_wheat:
+    name: "풍작"
+    desc: "밀 64개를 수확하세요."
     difficulty: EASY
-    type: DAILY
-    requirement:
-      type: ENTITY_KILL
-      target: SPIDER
-      amount: 30
-    reward:
+    type: BLOCK_BREAK
+    target: WHEAT
+    amount: 64
+    rewards:
+      money: 300
+      exp_job: 80
+      item: "BREAD 16"
+
+  dq_farming_pumpkin:
+    name: "호박 마차"
+    desc: "호박 32개를 수확하세요."
+    difficulty: NORMAL
+    type: BLOCK_BREAK
+    target: PUMPKIN
+    amount: 32
+    rewards:
       money: 800
-      exp: 180
+      exp_job: 150
+      item: "PUMPKIN_PIE 8"
 
-  dq_hunting_creepers:
-    name: "폭발물 처리반"
-    desc: "크리퍼 20마리를 처치하세요."
-    difficulty: NORMAL
-    type: DAILY
-    requirement:
-      type: ENTITY_KILL
-      target: CREEPER
-      amount: 20
-    reward:
-      money: 1600
-      exp: 350
-      items:
-        - "GUNPOWDER:10"
-
-  dq_hunting_endermen:
-    name: "엔더맨 사냥꾼"
-    desc: "엔더맨 10마리를 처치하세요."
-    difficulty: HARD
-    type: DAILY
-    requirement:
-      type: ENTITY_KILL
-      target: ENDERMAN
-      amount: 10
-    reward:
-      money: 2500
-      exp: 550
-      items:
-        - "ENDER_PEARL:3"
-
-  dq_hunting_witches:
-    name: "마녀 퇴치"
-    desc: "마녀 5마리를 처치하세요."
-    difficulty: HARD
-    type: DAILY
-    requirement:
-      type: ENTITY_KILL
-      target: WITCH
-      amount: 5
-    reward:
-      money: 2200
-      exp: 480
-
-  # ==================== 종합 퀘스트 ====================
-  dq_explorer:
-    name: "탐험가의 발걸음"
-    desc: "1000 블록을 이동하세요."
+  # 사냥꾼 퀘스트
+  dq_hunting_zombie:
+    name: "워킹 데드"
+    desc: "좀비 20마리를 처치하세요."
     difficulty: EASY
-    type: DAILY
-    requirement:
-      type: TRAVEL
-      target: ANY
-      amount: 1000
-    reward:
-      money: 400
-      exp: 100
+    type: ENTITY_KILL
+    target: ZOMBIE
+    amount: 20
+    rewards:
+      money: 600
+      exp_job: 120
+      item: "ROTTEN_FLESH 32"
 
-  dq_jack_of_trades:
-    name: "만물상"
-    desc: "아무 광물이나 100개 캐세요."
+  dq_hunting_creeper:
+    name: "폭발 주의"
+    desc: "크리퍼 10마리를 처치하세요."
     difficulty: NORMAL
-    type: DAILY
-    requirement:
-      type: BLOCK_BREAK
-      target: ANY_ORE
-      amount: 100
-    reward:
+    type: ENTITY_KILL
+    target: CREEPER
+    amount: 10
+    rewards:
       money: 1000
-      exp: 200
+      exp_job: 200
+      item: "GUNPOWDER 10"
 
-  dq_monster_slayer:
-    name: "몬스터 슬레이어"
-    desc: "적대적 몬스터 100마리를 처치하세요."
+  dq_hunting_enderman:
+    name: "눈을 마주치지 마"
+    desc: "엔더맨 5마리를 사냥하세요."
     difficulty: HARD
-    type: DAILY
-    requirement:
-      type: ENTITY_KILL
-      target: ANY_HOSTILE
-      amount: 100
-    reward:
-      money: 2000
-      exp: 450
+    type: ENTITY_KILL
+    target: ENDERMAN
+    amount: 5
+    rewards:
+      money: 1500
+      exp_job: 300
+      item: "ENDER_PEARL 2"
+
+  # 낚시꾼 퀘스트
+  dq_fishing_cod:
+    name: "대구 낚시"
+    desc: "대구 15마리를 낚으세요."
+    difficulty: EASY
+    type: FISH_CATCH
+    target: COD
+    amount: 15
+    rewards:
+      money: 500
+      exp_job: 100
+      item: "COOKED_COD 5"
+
+  dq_fishing_salmon:
+    name: "연어 샐러드"
+    desc: "연어 10마리를 낚으세요."
+    difficulty: NORMAL
+    type: FISH_CATCH
+    target: SALMON
+    amount: 10
+    rewards:
+      money: 800
+      exp_job: 150
+      item: "COOKED_SALMON 5"

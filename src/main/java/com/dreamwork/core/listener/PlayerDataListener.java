@@ -3,9 +3,11 @@ package com.dreamwork.core.listener;
 import com.dreamwork.core.DreamWorkCore;
 import com.dreamwork.core.job.JobManager;
 import com.dreamwork.core.job.UserJobData;
+import com.dreamwork.core.quest.QuestManager;
+import com.dreamwork.core.quest.QuestProgress;
 import com.dreamwork.core.stat.StatManager;
-import com.dreamwork.core.storage.StorageManager;
-import com.dreamwork.core.storage.UserData;
+import com.dreamwork.core.database.StorageManager;
+import com.dreamwork.core.model.UserData;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -13,6 +15,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -32,17 +35,14 @@ public class PlayerDataListener implements Listener {
     private final StorageManager storageManager;
     private final JobManager jobManager;
     private final StatManager statManager;
+    private final QuestManager questManager;
 
-    /**
-     * PlayerDataListener 생성자
-     * 
-     * @param plugin 플러그인 인스턴스
-     */
     public PlayerDataListener(DreamWorkCore plugin) {
         this.plugin = plugin;
         this.storageManager = plugin.getStorageManager();
         this.jobManager = plugin.getJobManager();
         this.statManager = plugin.getStatManager();
+        this.questManager = plugin.getQuestManager();
     }
 
     /**
@@ -54,43 +54,44 @@ public class PlayerDataListener implements Listener {
         UUID uuid = player.getUniqueId();
 
         // 비동기로 데이터 로드
-        storageManager.loadUserJsonAsync(uuid, UserData.class).thenAccept(optData -> {
+        storageManager.loadUserAsync(uuid, player.getName()).thenAccept(data -> {
             // 메인 스레드에서 데이터 적용
             plugin.getServer().getScheduler().runTask(plugin, () -> {
-                UserData data;
+                data.setName(player.getName());
 
-                if (optData.isPresent()) {
-                    // 기존 데이터 로드
-                    data = optData.get();
-                    data.setPlayerName(player.getName());
-                    data.updateLastLogin();
-
-                    if (plugin.isDebugMode()) {
-                        plugin.getLogger().info("[Debug] 플레이어 데이터 로드: " + player.getName());
-                    }
-                } else {
-                    // 신규 플레이어 - 새 데이터 생성
-                    data = new UserData(uuid, player.getName());
-
-                    if (plugin.isDebugMode()) {
-                        plugin.getLogger().info("[Debug] 신규 플레이어 데이터 생성: " + player.getName());
-                    }
+                if (plugin.isDebugMode()) {
+                    plugin.getLogger().info("[Debug] 플레이어 데이터 로드: " + player.getName());
                 }
 
-                // JobManager에 직업 데이터 등록
-                if (data.getJobData() != null) {
-                    jobManager.setUserJobData(uuid, data.getJobData());
-                } else {
-                    jobManager.setUserJobData(uuid, new UserJobData(uuid));
+                // 1. JobManager에 직업 데이터 등록
+                UserJobData jobData = new UserJobData(uuid);
+                if (data.getJobId() != null) {
+                    jobData.setJobId(data.getJobId());
+                    jobData.setLevel(data.getJobLevel());
+                    jobData.setCurrentExp(data.getJobExp());
+                    // TotalExp는 현재 저장하지 않고 있음 (UserData에 추가 필요 혹은 계산)
+                    jobData.setTotalExp(data.getJobExp());
                 }
+                jobManager.setUserJobData(uuid, jobData);
 
-                // StatManager에 스탯 데이터 등록
-                if (data.getStats() != null) {
-                    statManager.setStats(uuid, data.getStats());
-                }
+                // 2. StatManager에 스탯 데이터 등록
+                StatManager.PlayerStats stats = new StatManager.PlayerStats(uuid);
+                stats.setStr(data.getStr());
+                stats.setDex(data.getDex());
+                stats.setCon(data.getCon());
+                stats.setInt(data.getIntel());
+                stats.setLuck(data.getLuk());
+                stats.setStatPoints(data.getStatPoints());
+                statManager.setStats(uuid, stats);
 
-                // 스탯 재계산 (직업 보너스 적용)
+                // 스탯 재계산 (직업 보너스 등 적용)
                 statManager.recalculateStats(player);
+
+                // 3. QuestManager에 퀘스트 데이터 등록
+                questManager.loadQuestProgress(uuid, data.getQuestProgresses());
+
+                // 일일 퀘스트 할당 (없으면)
+                questManager.assignDailyQuests(player);
             });
         }).exceptionally(ex -> {
             plugin.getLogger().severe("플레이어 데이터 로드 실패: " + player.getName());
@@ -107,30 +108,59 @@ public class PlayerDataListener implements Listener {
         Player player = event.getPlayer();
         UUID uuid = player.getUniqueId();
 
-        // 현재 데이터 수집
-        UserData data = new UserData(uuid, player.getName());
+        // 캐시된 데이터 가져오기 (없으면 새로 생성하지 않고 무시)
+        UserData data = storageManager.getUserData(uuid);
+        if (data == null) {
+            // 로드가 완료되지 않은 상태에서 나가는 경우 등
+            return;
+        }
 
-        // 직업 데이터
+        // 최신 상태 동기화
+        // 1. 직업 데이터
         UserJobData jobData = jobManager.getUserJob(uuid);
-        data.setJobData(jobData.copy());
+        if (jobData != null) {
+            data.setJobId(jobData.getJobId());
+            data.setJobLevel(jobData.getLevel());
+            data.setJobExp(jobData.getCurrentExp());
+        }
 
-        // 스탯 데이터
+        // 2. 스탯 데이터
         StatManager.PlayerStats stats = statManager.getStats(uuid);
-        data.setStats(stats);
+        if (stats != null) {
+            data.setStr(stats.getBaseStr());
+            data.setDex(stats.getBaseDex());
+            data.setCon(stats.getBaseCon());
+            data.setIntel(stats.getBaseInt());
+            data.setLuk(stats.getBaseLuck());
+            data.setStatPoints(stats.getStatPoints());
+        }
 
-        // 비동기로 저장
-        storageManager.saveUserJsonAsync(uuid, data).thenRun(() -> {
-            if (plugin.isDebugMode()) {
-                plugin.getLogger().info("[Debug] 플레이어 데이터 저장: " + player.getName());
-            }
-        }).exceptionally(ex -> {
-            plugin.getLogger().severe("플레이어 데이터 저장 실패: " + player.getName());
-            ex.printStackTrace();
-            return null;
-        });
+        // 3. 퀘스트 데이터
+        // QuestManager의 맵이 UserData 내의 Map과 동일한 객체라면 자동 동기화됨 (Ref reference)
+        // 하지만 확실히 하기위해 명시적 할당
+        Map<String, QuestProgress> quests = questManager.getPlayerProgress(uuid);
+        if (quests != null) {
+            data.setQuestProgresses(quests);
+        }
 
-        // 캐시에서 제거
+        // 변경 사항 표시 및 저장 요청
+        data.markDirty();
+
+        // 메모리 해제는 저장 완료 후 또는 즉시 가능.
+        // 비동기 저장을 위해 데이터 객체는 남겨두되, 매니저 캐시는 정리
+        storageManager.saveUserAsync(data);
+
+        // 매니저 캐시 정리
         jobManager.unloadUserJob(uuid);
         statManager.unloadStats(uuid);
+        questManager.loadQuestProgress(uuid, null); // remove from quest manager
+        // StorageManager 캐시는 저장 후 자동제거되지 않음. 명시적으로 제거 필요.
+        // 하지만 저장이 비동기이므로, 저장이 끝날 때까지 객체는 유효해야 함.
+        // saveUserAsync 내부에서 참조하므로 여기서는 remove 해도 됨.
+        storageManager.unloadUser(uuid);
+
+        if (plugin.isDebugMode()) {
+            plugin.getLogger().info("[Debug] 플레이어 데이터 저장 및 언로드: " + player.getName());
+        }
     }
 }
