@@ -77,7 +77,8 @@ public class RankManager extends Manager {
 
         try (Connection conn = plugin.getDatabaseManager().getConnection()) {
             // 레벨 내림차순, 경험치 내림차순으로 상위 100명 조회
-            String sql = "SELECT uuid, name, job_id, job_level, job_exp FROM dw_users ORDER BY job_level DESC, job_exp DESC LIMIT 100";
+            // 레벨 내림차순, 경험치 내림차순으로 상위 100명 조회
+            String sql = "SELECT u.uuid, u.name, j.job_id, j.level, j.exp FROM dw_jobs j JOIN dw_users u ON j.uuid = u.uuid ORDER BY j.level DESC, j.exp DESC LIMIT 100";
 
             try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
                 ResultSet rs = pstmt.executeQuery();
@@ -86,8 +87,8 @@ public class RankManager extends Manager {
                     String uuidStr = rs.getString("uuid");
                     String name = rs.getString("name");
                     String jobId = rs.getString("job_id");
-                    int level = rs.getInt("job_level");
-                    double exp = rs.getDouble("job_exp");
+                    int level = rs.getInt("level");
+                    double exp = rs.getDouble("exp");
 
                     if (jobId == null || jobId.isEmpty())
                         continue;

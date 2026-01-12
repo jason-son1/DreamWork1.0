@@ -118,6 +118,18 @@ public class DatabaseManager {
 
             stmt.execute(townTable);
 
+            // 직업 데이터 테이블 (Ranking System)
+            String jobTable = """
+                    CREATE TABLE IF NOT EXISTS dw_jobs (
+                        uuid VARCHAR(36),
+                        job_id VARCHAR(32),
+                        level INT DEFAULT 1,
+                        exp DOUBLE DEFAULT 0.0,
+                        PRIMARY KEY (uuid, job_id)
+                    )
+                    """;
+            stmt.execute(jobTable);
+
             plugin.getLogger().info("[Database] 테이블 초기화 완료");
 
         } catch (SQLException e) {

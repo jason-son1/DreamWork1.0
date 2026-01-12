@@ -112,6 +112,20 @@ public class StorageManager {
 
                     pstmt.executeUpdate();
 
+                    // dw_jobs 테이블 업데이트 (랭킹용)
+                    String jobSql = "REPLACE INTO dw_jobs (uuid, job_id, level, exp) VALUES (?, ?, ?, ?)";
+                    try (PreparedStatement jobStmt = conn.prepareStatement(jobSql)) {
+                        for (Map.Entry<JobType, JobInfo> entry : user.getJobs().entrySet()) {
+                            JobInfo info = entry.getValue();
+                            jobStmt.setString(1, user.getUuid().toString());
+                            jobStmt.setString(2, entry.getKey().getConfigKey());
+                            jobStmt.setInt(3, info.getLevel());
+                            jobStmt.setDouble(4, info.getCurrentExp());
+                            jobStmt.addBatch();
+                        }
+                        jobStmt.executeBatch();
+                    }
+
                     // 저장 완료 후 더티 플래그 해제
                     user.clearDirty();
 

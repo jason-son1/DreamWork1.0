@@ -60,16 +60,16 @@ triggers:
     money: 100.0
 
   # 신규 커스텀 어종 (월척 시스템에서 처리)
-  custom_fish:
-    tuna:
-      exp: 25.0
-      money: 20.0
-    anglerfish:
-      exp: 40.0
-      money: 35.0
-    legendary_fish:
-      exp: 500.0
-      money: 1000.0
+custom_fish:
+  tuna:
+    exp: 25.0
+    money: 20.0
+  anglerfish:
+    exp: 40.0
+    money: 35.0
+  legendary_fish:
+    exp: 500.0
+    money: 1000.0
 
 # ============================================
 # 레벨업 보상
