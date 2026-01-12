@@ -4,6 +4,8 @@ import com.dreamwork.core.DreamWorkCore;
 import com.dreamwork.core.item.ItemBuilder;
 import com.dreamwork.core.job.JobType;
 import org.bukkit.*;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -111,7 +113,8 @@ public class BossTotemItem implements Listener {
             living.setCustomNameVisible(true);
 
             // 강화된 스탯
-            var maxHealth = living.getAttribute(org.bukkit.attribute.Attribute.MAX_HEALTH);
+            // 강화된 스탯
+            AttributeInstance maxHealth = living.getAttribute(Attribute.GENERIC_MAX_HEALTH);
             if (maxHealth != null) {
                 maxHealth.setBaseValue(maxHealth.getValue() * bossType.healthMultiplier);
                 living.setHealth(maxHealth.getValue());

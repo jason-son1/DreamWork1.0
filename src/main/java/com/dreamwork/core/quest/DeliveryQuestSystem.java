@@ -159,7 +159,7 @@ public class DeliveryQuestSystem {
 
         // 보상 지급
         if (plugin.getHookManager().isVaultEnabled()) {
-            plugin.getHookManager().getVaultHook().deposit(player, quest.moneyReward);
+            plugin.getHookManager().getVaultHook().give(player, quest.moneyReward);
         }
         plugin.getJobManager().addExp(player, JobType.EXPLORER, quest.expReward);
 

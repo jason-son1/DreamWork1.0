@@ -3,6 +3,7 @@ package com.dreamwork.core.system;
 import com.dreamwork.core.DreamWorkCore;
 import com.dreamwork.core.job.JobType;
 import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Monster;
@@ -125,7 +126,7 @@ public class MobTierSystem implements Listener {
         monster.setCustomNameVisible(true);
 
         // 체력 강화
-        var maxHealth = monster.getAttribute(Attribute.MAX_HEALTH);
+        AttributeInstance maxHealth = monster.getAttribute(Attribute.GENERIC_MAX_HEALTH);
         if (maxHealth != null) {
             double newHealth = maxHealth.getValue() * tier.healthMultiplier;
             maxHealth.setBaseValue(newHealth);
@@ -133,13 +134,13 @@ public class MobTierSystem implements Listener {
         }
 
         // 공격력 강화
-        var attackDamage = monster.getAttribute(Attribute.ATTACK_DAMAGE);
+        AttributeInstance attackDamage = monster.getAttribute(Attribute.GENERIC_ATTACK_DAMAGE);
         if (attackDamage != null) {
             attackDamage.setBaseValue(attackDamage.getValue() * tier.damageMultiplier);
         }
 
         // 이동속도 증가
-        var movementSpeed = monster.getAttribute(Attribute.MOVEMENT_SPEED);
+        AttributeInstance movementSpeed = monster.getAttribute(Attribute.GENERIC_MOVEMENT_SPEED);
         if (movementSpeed != null) {
             movementSpeed.setBaseValue(movementSpeed.getValue() * tier.speedMultiplier);
         }

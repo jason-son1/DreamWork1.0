@@ -42,7 +42,7 @@ public class ShopManager extends Manager {
 
     private void initializeShops() {
         // 잡화점 (General Store)
-        List<ShopItem> generalShop = new ArrayList<>();
+        List<ShopItem> general = new ArrayList<>();
         shops.clear();
 
         // 1. 잡화점 (General)
