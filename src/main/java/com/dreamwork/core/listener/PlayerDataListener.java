@@ -2,7 +2,7 @@ package com.dreamwork.core.listener;
 
 import com.dreamwork.core.DreamWorkCore;
 import com.dreamwork.core.job.JobManager;
-import com.dreamwork.core.job.UserJobData;
+import com.dreamwork.core.job.JobType;
 import com.dreamwork.core.quest.QuestManager;
 import com.dreamwork.core.quest.QuestProgress;
 import com.dreamwork.core.stat.StatManager;
@@ -20,10 +20,13 @@ import java.util.UUID;
 
 /**
  * 플레이어 데이터 로드/저장 리스너
- * 
  * <p>
  * 플레이어 접속 시 데이터를 비동기로 로드하고,
  * 퇴장 시 비동기로 저장합니다.
+ * </p>
+ * <p>
+ * 다중 직업 시스템: 플레이어는 5개 직업(광부/농부/어부/사냥꾼/탐험가)을
+ * 동시에 레벨업할 수 있습니다.
  * </p>
  * 
  * @author DreamWork Team
@@ -61,20 +64,17 @@ public class PlayerDataListener implements Listener {
 
                 if (plugin.isDebugMode()) {
                     plugin.getLogger().info("[Debug] 플레이어 데이터 로드: " + player.getName());
+
+                    // 직업 레벨 로그
+                    for (JobType jobType : JobType.values()) {
+                        int level = data.getJobLevel(jobType);
+                        double exp = data.getJobExp(jobType);
+                        plugin.getLogger().info("[Debug]   " + jobType.getDisplayName() +
+                                " Lv." + level + " (Exp: " + String.format("%.0f", exp) + ")");
+                    }
                 }
 
-                // 1. JobManager에 직업 데이터 등록
-                UserJobData jobData = new UserJobData(uuid);
-                if (data.getJobId() != null) {
-                    jobData.setJobId(data.getJobId());
-                    jobData.setLevel(data.getJobLevel());
-                    jobData.setCurrentExp(data.getJobExp());
-                    // TotalExp는 현재 저장하지 않고 있음 (UserData에 추가 필요 혹은 계산)
-                    jobData.setTotalExp(data.getJobExp());
-                }
-                jobManager.setUserJobData(uuid, jobData);
-
-                // 2. StatManager에 스탯 데이터 등록
+                // 1. StatManager에 스탯 데이터 등록
                 StatManager.PlayerStats stats = new StatManager.PlayerStats(uuid);
                 stats.setStr(data.getStr());
                 stats.setDex(data.getDex());
@@ -87,11 +87,15 @@ public class PlayerDataListener implements Listener {
                 // 스탯 재계산 (직업 보너스 등 적용)
                 statManager.recalculateStats(player);
 
-                // 3. QuestManager에 퀘스트 데이터 등록
+                // 2. QuestManager에 퀘스트 데이터 등록
                 questManager.loadQuestProgress(uuid, data.getQuestProgresses());
 
                 // 일일 퀘스트 할당 (없으면)
                 questManager.assignDailyQuests(player);
+
+                // 3. 환영 메시지 - 총 레벨 표시
+                int totalLevel = data.getTotalJobLevel();
+                player.sendMessage("§a[DreamWork] §f환영합니다! 총 직업 레벨: §e" + totalLevel);
             });
         }).exceptionally(ex -> {
             plugin.getLogger().severe("플레이어 데이터 로드 실패: " + player.getName());
@@ -108,7 +112,7 @@ public class PlayerDataListener implements Listener {
         Player player = event.getPlayer();
         UUID uuid = player.getUniqueId();
 
-        // 캐시된 데이터 가져오기 (없으면 새로 생성하지 않고 무시)
+        // 캐시된 데이터 가져오기 (없으면 무시)
         UserData data = storageManager.getUserData(uuid);
         if (data == null) {
             // 로드가 완료되지 않은 상태에서 나가는 경우 등
@@ -116,15 +120,7 @@ public class PlayerDataListener implements Listener {
         }
 
         // 최신 상태 동기화
-        // 1. 직업 데이터
-        UserJobData jobData = jobManager.getUserJob(uuid);
-        if (jobData != null) {
-            data.setJobId(jobData.getJobId());
-            data.setJobLevel(jobData.getLevel());
-            data.setJobExp(jobData.getCurrentExp());
-        }
-
-        // 2. 스탯 데이터
+        // 1. 스탯 데이터
         StatManager.PlayerStats stats = statManager.getStats(uuid);
         if (stats != null) {
             data.setStr(stats.getBaseStr());
@@ -135,28 +131,23 @@ public class PlayerDataListener implements Listener {
             data.setStatPoints(stats.getStatPoints());
         }
 
-        // 3. 퀘스트 데이터
-        // QuestManager의 맵이 UserData 내의 Map과 동일한 객체라면 자동 동기화됨 (Ref reference)
-        // 하지만 확실히 하기위해 명시적 할당
+        // 2. 퀘스트 데이터
         Map<String, QuestProgress> quests = questManager.getPlayerProgress(uuid);
         if (quests != null) {
             data.setQuestProgresses(quests);
         }
 
+        // 3. 직업 데이터는 UserData.jobs에 직접 저장되므로 별도 동기화 불필요
+        // (JobManager.addExp가 UserData.getJobInfo를 직접 수정함)
+
         // 변경 사항 표시 및 저장 요청
         data.markDirty();
-
-        // 메모리 해제는 저장 완료 후 또는 즉시 가능.
-        // 비동기 저장을 위해 데이터 객체는 남겨두되, 매니저 캐시는 정리
         storageManager.saveUserAsync(data);
 
         // 매니저 캐시 정리
         jobManager.unloadUserJob(uuid);
         statManager.unloadStats(uuid);
-        questManager.loadQuestProgress(uuid, null); // remove from quest manager
-        // StorageManager 캐시는 저장 후 자동제거되지 않음. 명시적으로 제거 필요.
-        // 하지만 저장이 비동기이므로, 저장이 끝날 때까지 객체는 유효해야 함.
-        // saveUserAsync 내부에서 참조하므로 여기서는 remove 해도 됨.
+        questManager.loadQuestProgress(uuid, null); // 퀘스트 매니저에서 제거
         storageManager.unloadUser(uuid);
 
         if (plugin.isDebugMode()) {

@@ -49,6 +49,24 @@ public class RewardProcessor {
     }
 
     /**
+     * 돈을 지급합니다. (Vault 연동)
+     * 
+     * @param player 플레이어
+     * @param amount 금액
+     */
+    public void grantMoney(Player player, double amount) {
+        if (amount <= 0)
+            return;
+
+        net.milkbowl.vault.economy.Economy econ = com.dreamwork.core.DreamWorkCore.getEconomy();
+        if (econ == null) {
+            return;
+        }
+
+        econ.depositPlayer(player, amount);
+    }
+
+    /**
      * 레벨업 보상을 처리합니다.
      * 
      * @param player  플레이어

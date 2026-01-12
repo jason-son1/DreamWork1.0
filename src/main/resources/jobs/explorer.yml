@@ -1,0 +1,100 @@
+# ============================================
+# DreamWork - 탐험가 (Explorer) 직업 설정
+# ============================================
+# 맵을 탐사하고, 던전을 발견하며, 좌표를 판매하는 직업
+
+job:
+  id: explorer
+  name: "탐험가"
+  description: "지평선의 기록자 - 맵 탐사, 던전 발견, 좌표 판매"
+  icon: "FILLED_MAP"
+  max-level: 100
+
+# 레벨업에 필요한 기본 경험치 (레벨 1->2)
+base-exp: 100
+
+# 레벨당 경험치 증가율 (기본값: 1.15 = 15% 증가)
+exp-multiplier: 1.15
+
+# 스탯 보너스 (레벨당)
+stats:
+  agility: 0.3          # 민첩 - 이동 속도
+  fall-reduction: 0.5   # 낙하 데미지 감소 %
+  stamina: 2.0          # 스태미나 (파쿠르 기술용)
+
+# 경험치 획득 설정
+exp-sources:
+  # 새로운 청크 발견
+  discover-chunk:
+    exp: 5.0
+    money: 2.0
+    
+  # 새로운 바이옴 발견
+  discover-biome:
+    exp: 25.0
+    money: 15.0
+    
+  # 구조물 발견 (마을, 사원, 유적 등)
+  discover-structure:
+    village:
+      exp: 50.0
+      money: 30.0
+    temple:
+      exp: 75.0
+      money: 50.0
+    stronghold:
+      exp: 200.0
+      money: 150.0
+    ancient_city:
+      exp: 300.0
+      money: 200.0
+    ocean_monument:
+      exp: 150.0
+      money: 100.0
+    end_city:
+      exp: 250.0
+      money: 180.0
+      
+  # 이동 거리 (100블록당)
+  travel-distance:
+    exp: 1.0
+    money: 0.1
+    
+  # 배달 퀘스트 완료
+  delivery-complete:
+    base-exp: 30.0
+    base-money: 150.0
+    distance-bonus: 0.01  # 블록당 추가 보상
+
+# 스킬 설정
+skills:
+  # 패시브: 가벼운 발걸음
+  light-step:
+    enabled: true
+    speed-bonus-per-level: 0.002   # 레벨당 이동속도 증가
+    fall-damage-reduction: 0.5     # 레벨당 낙하 데미지 감소 %
+    
+  # 액티브: 귀환의 본능
+  recall:
+    enabled: true
+    cooldown: 1800        # 30분
+    cast-time: 5          # 5초 캐스팅
+    combat-block: true    # 전투 중 사용 불가
+    
+  # 액티브: 아틀라스 기록 (최초 발견 보너스)
+  atlas:
+    enabled: true
+    first-finder-bonus: 3.0   # 최초 발견 시 경험치/돈 3배
+
+# 레벨별 해금
+unlocks:
+  10:
+    - "이동 속도 +5%"
+  25:
+    - "낙법 스킬 해금"
+  50:
+    - "이단 점프 해금"
+  75:
+    - "그래플링 훅 제작 가능"
+  100:
+    - "[지평선의 기록자] 칭호 획득"

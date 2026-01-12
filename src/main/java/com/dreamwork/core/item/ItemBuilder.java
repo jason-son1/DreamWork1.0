@@ -124,6 +124,14 @@ public class ItemBuilder {
     }
 
     /**
+     * 아이템 플래그를 추가합니다. (단수형 별칭)
+     */
+    public ItemBuilder flag(ItemFlag flag) {
+        meta.addItemFlags(flag);
+        return this;
+    }
+
+    /**
      * 수량을 설정합니다.
      */
     public ItemBuilder amount(int amount) {

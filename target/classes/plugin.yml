@@ -6,17 +6,33 @@ prefix: DreamWork
 author: DreamWork Team
 description: 야생 + 타운 + 성장형 RPG 서버를 위한 핵심 플러그인
 
-# Soft Dependencies (없어도 플러그인 동작)
+# 소프트 의존성 (없어도 플러그인 동작, 있으면 연동)
 softdepend:
   - Vault
   - PlaceholderAPI
+  - Towny
+  - TownyChat
+  - LuckPerms
 
 # 명령어 정의
 commands:
   dreamwork:
     description: DreamWork Core 메인 명령어
-    usage: /<command> [reload|help]
+    usage: /<command> [reload|help|job|stat|quest]
     aliases: [dw]
+    permission: dreamwork.use
+  내정보:
+    description: 내 직업/스탯 정보 GUI 보기
+    usage: /내정보
+    permission: dreamwork.use
+  money:
+    description: 소지금 확인 및 관리
+    usage: /money [pay|give|set]
+    aliases: [돈, balance, bal]
+    permission: dreamwork.use
+  town:
+    description: 마을 시스템 명령어
+    aliases: [마을, t]
     permission: dreamwork.use
 
 # 퍼미션 정의
@@ -30,6 +46,10 @@ permissions:
     children:
       dreamwork.reload: true
       dreamwork.use: true
+      dreamwork.addexp: true
   dreamwork.reload:
     description: 플러그인 설정 리로드 권한
+    default: op
+  dreamwork.addexp:
+    description: 경험치 추가 권한
     default: op

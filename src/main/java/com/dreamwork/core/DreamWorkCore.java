@@ -3,7 +3,10 @@ package com.dreamwork.core;
 import com.dreamwork.core.hook.HookManager;
 import com.dreamwork.core.item.SetEffectManager;
 import com.dreamwork.core.job.JobManager;
+import com.dreamwork.core.job.JobType;
 import com.dreamwork.core.listener.*;
+import com.dreamwork.core.job.system.MiningComboSystem;
+import com.dreamwork.core.item.custom.UnidentifiedOreItem;
 import com.dreamwork.core.manager.Manager;
 import com.dreamwork.core.quest.QuestManager;
 import com.dreamwork.core.stat.InventoryScanner;
@@ -13,14 +16,17 @@ import com.dreamwork.core.database.AutoSaveScheduler;
 
 import com.dreamwork.core.gui.SmartInventory;
 import com.dreamwork.core.gui.provider.JobSelectionProvider;
+import com.dreamwork.core.gui.provider.JobStatusProvider;
 import com.dreamwork.core.gui.provider.StatProfileProvider;
 import com.dreamwork.core.item.ItemFactory;
 import com.dreamwork.core.quest.QuestUI;
 import com.dreamwork.core.skill.SkillManager;
+import com.dreamwork.core.skill.passive.*;
 import com.dreamwork.core.stat.resource.ManaRegenTask;
 import com.dreamwork.core.ui.ActionBarManager;
 import com.dreamwork.core.ui.BossBarManager;
 import com.dreamwork.core.ui.ScoreboardHUD;
+import com.dreamwork.core.economy.DreamWorkEconomy;
 import com.dreamwork.core.economy.LootTableManager;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
@@ -93,6 +99,27 @@ public final class DreamWorkCore extends JavaPlugin {
 
     /** 드롭 테이블 매니저 */
     private LootTableManager lootTableManager;
+
+    /** 상점 매니저 */
+    private com.dreamwork.core.economy.shop.ShopManager shopManager;
+
+    /** 채굴 콤보 시스템 */
+    private MiningComboSystem miningComboSystem;
+
+    // ...
+
+    /**
+     * 외부 플러그인 연동 매니저를 반환합니다.
+     * 
+     * @return HookManager 인스턴스
+     */
+    public HookManager getHookManager() {
+        return hookManager;
+    }
+
+    public com.dreamwork.core.economy.shop.ShopManager getShopManager() {
+        return shopManager;
+    }
     // ... (fields continue)
 
     // ... (getInstance)
@@ -136,6 +163,9 @@ public final class DreamWorkCore extends JavaPlugin {
         // Vault 경제 연동
         if (setupEconomy()) {
             getLogger().info("Vault 경제 시스템 연동 성공!");
+            // 명령어 등록
+            getCommand("money").setExecutor(new com.dreamwork.core.economy.EconomyCommand(this));
+            getCommand("town").setExecutor(new com.dreamwork.core.town.TownCommand(this));
         } else {
             getLogger().warning("Vault를 찾을 수 없습니다. 경제 기능이 비활성화됩니다.");
         }
@@ -165,6 +195,7 @@ public final class DreamWorkCore extends JavaPlugin {
         saveResource("jobs/farmer.yml", false);
         saveResource("jobs/hunter.yml", false);
         saveResource("jobs/fisher.yml", false);
+        saveResource("jobs/explorer.yml", false);
 
         // 퀘스트 설정
         saveResource("quests/daily.yml", false);
@@ -217,6 +248,10 @@ public final class DreamWorkCore extends JavaPlugin {
         // 랭킹 매니저
         rankManager = new com.dreamwork.core.rank.RankManager(this);
         registerManager(rankManager);
+
+        // 상점 매니저
+        shopManager = new com.dreamwork.core.economy.shop.ShopManager(this);
+        registerManager(shopManager);
 
         // 아이템 팩토리
         itemFactory = new ItemFactory(this);
@@ -281,8 +316,37 @@ public final class DreamWorkCore extends JavaPlugin {
         // 장비 스캐너 (리스너)
         getServer().getPluginManager().registerEvents(inventoryScanner, this);
 
+        // 채굴 콤보 시스템
+        this.miningComboSystem = new MiningComboSystem(this);
+        getServer().getPluginManager().registerEvents(miningComboSystem, this);
+
+        // 미확인 광물 아이템
+        getServer().getPluginManager().registerEvents(new UnidentifiedOreItem(this), this);
+        getServer().getPluginManager().registerEvents(new com.dreamwork.core.item.custom.DreamStoneItem(this), this);
+
+        // 농부 시스템
+        getServer().getPluginManager().registerEvents(new com.dreamwork.core.job.system.CropQualitySystem(this), this);
+
+        // 어부 시스템
+        getServer().getPluginManager().registerEvents(new com.dreamwork.core.job.system.FishMeasurementSystem(this),
+                this);
+
+        // 탐험가 시스템
+        getServer().getPluginManager().registerEvents(new com.dreamwork.core.job.system.AtlasDiscoverySystem(this),
+                this);
+
+        // 사냥꾼 시스템
+        getServer().getPluginManager().registerEvents(new com.dreamwork.core.job.system.MobTierSystem(this), this);
+
+        // 패시브 스킬 리스너 등록
+        getServer().getPluginManager().registerEvents(new MinerVeinSkill(this), this);
+        getServer().getPluginManager().registerEvents(new FarmerAutoReplantSkill(this), this);
+        getServer().getPluginManager().registerEvents(new FisherMasterAnglerSkill(this), this);
+        getServer().getPluginManager().registerEvents(new HunterCriticalSkill(this), this);
+        getServer().getPluginManager().registerEvents(new ExplorerTraversalSkill(this), this);
+
         if (isDebugMode()) {
-            getLogger().info("[Debug] 이벤트 리스너 8개 등록 완료");
+            getLogger().info("[Debug] 이벤트 리스너 13개 등록 완료");
         }
     }
 
@@ -326,7 +390,7 @@ public final class DreamWorkCore extends JavaPlugin {
         if (command.getName().equalsIgnoreCase("dreamwork")) {
             if (args.length == 0) {
                 sendMessage(sender, "&6DreamWork Core &7v" + getPluginMeta().getVersion());
-                sendMessage(sender, "&7사용법: /dw [reload|help]");
+                sendMessage(sender, "&7사용법: /dw [reload|help|job|stat|quest]");
                 return true;
             }
 
@@ -444,8 +508,56 @@ public final class DreamWorkCore extends JavaPlugin {
                                 " &7(Lv." + entry.getLevel() + ") &8- " + entry.getJob());
                     }
                 }
+                case "alloy" -> {
+                    if (!(sender instanceof org.bukkit.entity.Player player)) {
+                        sendMessage(sender, "&c플레이어만 사용할 수 있습니다.");
+                        return true;
+                    }
+                    com.dreamwork.core.gui.SmartInventory.builder()
+                            .title("§8합금 제련소")
+                            .size(27)
+                            .provider(new com.dreamwork.core.gui.provider.AlloyCraftingProvider(player, this))
+                            .build()
+                            .open(player);
+                }
+                case "scythe" -> {
+                    if (!(sender instanceof org.bukkit.entity.Player player)) {
+                        sendMessage(sender, "&c플레이어만 사용할 수 있습니다.");
+                        return true;
+                    }
+                    // 풍요의 낫 지급 (테스트용)
+                    org.bukkit.inventory.ItemStack scythe = new com.dreamwork.core.item.custom.ScytheItem(this)
+                            .createScythe();
+                    player.getInventory().addItem(scythe);
+                    sendMessage(sender, "&a풍요의 낫을 지급했습니다.");
+                }
+                case "shop" -> {
+                    if (!(sender instanceof org.bukkit.entity.Player player)) {
+                        sendMessage(sender, "&c플레이어만 사용할 수 있습니다.");
+                        return true;
+                    }
+                    String shopId = args.length > 1 ? args[1] : "general";
+                    shopManager.openShop(player, shopId);
+                }
                 default -> sendMessage(sender, getMessage("unknown-command"));
             }
+            return true;
+        }
+
+        // /내정보 명령어 처리
+        if (command.getName().equalsIgnoreCase("내정보"))
+
+        {
+            if (!(sender instanceof org.bukkit.entity.Player player)) {
+                sendMessage(sender, "&c플레이어만 사용할 수 있습니다.");
+                return true;
+            }
+            SmartInventory.builder()
+                    .title("§6§l내 직업 정보")
+                    .size(45)
+                    .provider(new JobStatusProvider(player, this))
+                    .build()
+                    .open(player);
             return true;
         }
         return false;
@@ -500,6 +612,13 @@ public final class DreamWorkCore extends JavaPlugin {
         if (getServer().getPluginManager().getPlugin("Vault") == null) {
             return false;
         }
+
+        // DreamWorkEconomy 인스턴스 생성 및 등록
+        DreamWorkEconomy economyProvider = new com.dreamwork.core.economy.DreamWorkEconomy(this);
+        getServer().getServicesManager().register(net.milkbowl.vault.economy.Economy.class, economyProvider, this,
+                org.bukkit.plugin.ServicePriority.Highest);
+
+        // 등록된 프로바이더 확인
         org.bukkit.plugin.RegisteredServiceProvider<net.milkbowl.vault.economy.Economy> rsp = getServer()
                 .getServicesManager().getRegistration(net.milkbowl.vault.economy.Economy.class);
         if (rsp == null) {
@@ -511,15 +630,6 @@ public final class DreamWorkCore extends JavaPlugin {
 
     public static net.milkbowl.vault.economy.Economy getEconomy() {
         return econ;
-    }
-
-    /**
-     * 외부 플러그인 연동 매니저를 반환합니다.
-     * 
-     * @return HookManager 인스턴스
-     */
-    public HookManager getHookManager() {
-        return hookManager;
     }
 
     /**
@@ -615,5 +725,14 @@ public final class DreamWorkCore extends JavaPlugin {
      */
     public LootTableManager getLootTableManager() {
         return lootTableManager;
+    }
+
+    /**
+     * 채굴 콤보 시스템을 반환합니다.
+     * 
+     * @return MiningComboSystem 인스턴스
+     */
+    public MiningComboSystem getMiningComboSystem() {
+        return miningComboSystem;
     }
 }

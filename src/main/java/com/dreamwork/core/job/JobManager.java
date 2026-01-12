@@ -309,11 +309,63 @@ public class JobManager extends Manager {
     // ==================== 경험치 시스템 ====================
 
     /**
-     * 플레이어에게 경험치를 추가합니다.
+     * 플레이어에게 특정 직업의 경험치를 추가합니다. (다중 직업 시스템)
+     * 
+     * @param player  플레이어
+     * @param jobType 직업 타입
+     * @param amount  경험치 양
+     */
+    public void addExp(Player player, JobType jobType, double amount) {
+        if (amount <= 0 || jobType == null)
+            return;
+
+        UUID uuid = player.getUniqueId();
+
+        // UserData에서 직업 정보 가져오기
+        var userData = plugin.getStorageManager().getUserData(uuid);
+        if (userData == null)
+            return;
+
+        JobInfo jobInfo = userData.getJobInfo(jobType);
+        JobProvider job = getJob(jobType.getConfigKey());
+
+        if (job == null) {
+            plugin.getLogger().warning("[JobManager] 직업 설정을 찾을 수 없음: " + jobType.getConfigKey());
+            return;
+        }
+
+        // 경험치 배율 적용
+        double finalExp = amount * expMultiplier;
+
+        // 광부 콤보 시스템 배율 적용
+        if (jobType == JobType.MINER && plugin.getMiningComboSystem() != null) {
+            finalExp *= plugin.getMiningComboSystem().getExpMultiplier(uuid);
+        }
+
+        jobInfo.addExp(finalExp);
+        userData.markDirty();
+
+        // 레벨업 체크
+        checkLevelUp(player, jobInfo, job, jobType);
+
+        // 디버그 메시지
+        if (plugin.isDebugMode()) {
+            plugin.getLogger().info("[Debug] " + player.getName() + " " + jobType.getDisplayName() +
+                    " 경험치 획득: " + String.format("%.1f", finalExp) +
+                    " (Lv." + jobInfo.getLevel() + " | " +
+                    String.format("%.0f", jobInfo.getCurrentExp()) + "/" +
+                    String.format("%.0f", calculateRequiredExp(jobInfo.getLevel() + 1)) + ")");
+        }
+    }
+
+    /**
+     * 플레이어에게 경험치를 추가합니다. (하위 호환용)
      * 
      * @param player 플레이어
      * @param amount 경험치 양
+     * @deprecated addExp(Player, JobType, double) 사용 권장
      */
+    @Deprecated
     public void addExp(Player player, double amount) {
         if (amount <= 0)
             return;
@@ -345,12 +397,55 @@ public class JobManager extends Manager {
     }
 
     /**
-     * 레벨업을 체크하고 처리합니다.
+     * 레벨업을 체크하고 처리합니다. (다중 직업 시스템)
+     * 
+     * @param player  플레이어
+     * @param jobInfo 직업 정보
+     * @param job     직업 제공자
+     * @param jobType 직업 타입
+     */
+    private void checkLevelUp(Player player, JobInfo jobInfo, JobProvider job, JobType jobType) {
+        int maxLevel = job.getMaxLevel();
+
+        while (jobInfo.getLevel() < maxLevel) {
+            double requiredExp = calculateRequiredExp(jobInfo.getLevel() + 1);
+
+            if (jobInfo.getCurrentExp() < requiredExp) {
+                break; // 경험치 부족
+            }
+
+            // 레벨업!
+            int oldLevel = jobInfo.getLevel();
+            jobInfo.levelUp(requiredExp);
+            int newLevel = jobInfo.getLevel();
+
+            // 커스텀 이벤트 호출
+            JobLevelUpEvent event = new JobLevelUpEvent(player, job.getId(), oldLevel, newLevel);
+            Bukkit.getPluginManager().callEvent(event);
+
+            // 레벨업 콜백 (JobProvider)
+            job.onLevelUp(player, oldLevel, newLevel);
+
+            // 스탯 재계산
+            plugin.getStatManager().recalculateStats(player);
+
+            // 레벨업 이펙트
+            showLevelUpEffect(player, job, newLevel);
+
+            plugin.getLogger().info(player.getName() + "님이 " + jobType.getDisplayName() +
+                    " 레벨 " + newLevel + "을(를) 달성했습니다!");
+        }
+    }
+
+    /**
+     * 레벨업을 체크하고 처리합니다. (하위 호환용)
      * 
      * @param player 플레이어
      * @param data   직업 데이터
      * @param job    직업 제공자
+     * @deprecated checkLevelUp(Player, JobInfo, JobProvider, JobType) 사용 권장
      */
+    @Deprecated
     private void checkLevelUp(Player player, UserJobData data, JobProvider job) {
         int maxLevel = job.getMaxLevel();
 

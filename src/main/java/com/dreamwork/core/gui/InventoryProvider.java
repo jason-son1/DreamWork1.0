@@ -61,4 +61,13 @@ public abstract class InventoryProvider {
     public void setInventory(Inventory inventory) {
         this.inventory = inventory;
     }
+
+    /**
+     * 상호작용 가능 여부 (아이템 이동 등)
+     * 
+     * @return true면 SmartInventory에서 이벤트를 자동으로 취소하지 않음
+     */
+    public boolean isInteractive() {
+        return false;
+    }
 }

@@ -84,12 +84,15 @@ public class SmartInventory implements Listener {
         if (!event.getInventory().equals(smartInv.inventory))
             return;
 
-        event.setCancelled(true);
+        // Interactive 모드가 아닐 때만 자동 취소 및 타 인벤토리 무시
+        if (!smartInv.provider.isInteractive()) {
+            event.setCancelled(true);
 
-        if (event.getClickedInventory() == null)
-            return;
-        if (!event.getClickedInventory().equals(smartInv.inventory))
-            return;
+            if (event.getClickedInventory() == null)
+                return;
+            if (!event.getClickedInventory().equals(smartInv.inventory))
+                return;
+        }
 
         smartInv.provider.onClick(event);
     }

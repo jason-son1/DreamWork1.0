@@ -97,6 +97,17 @@ public interface JobProvider {
     double calculateExp(String action, String target);
 
     /**
+     * 특정 행동(트리거)에 대한 보상 금액을 계산합니다.
+     * 
+     * @param action 행동 유형 (예: "BREAK_BLOCK", "FISH_CATCH", "MOB_KILL")
+     * @param target 대상 (예: "DIAMOND_ORE", "SALMON", "ZOMBIE")
+     * @return 보상 금액 (해당 없으면 0)
+     */
+    default double calculateMoney(String action, String target) {
+        return 0; // 기본 구현: 돈 보상 없음
+    }
+
+    /**
      * 레벨업 시 호출되는 콜백입니다.
      * 
      * <p>

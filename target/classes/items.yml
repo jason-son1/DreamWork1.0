@@ -86,3 +86,26 @@ assassin_dagger:
   enchants:
     sharpness: 2
     sweeping: 1
+
+# ==================== 광부 아이템 ====================
+dream_stone:
+  material: AMETHYST_SHARD
+  name: "&d드림 스톤"
+  lore:
+    - "&7신비한 기운이 느껴지는 돌입니다."
+    - "&7합금 제작이나 타운 건설에 사용됩니다."
+    - ""
+    - "&e[희귀 재료]"
+  stats:
+    luck: 5
+
+reinforced_alloy:
+  material: NETHERITE_INGOT
+  name: "&b강화된 합금"
+  lore:
+    - "&7여러 금속을 융합하여 만든 특수 합금입니다."
+    - "&7건축가 권한 연장 및 장비 수리에 사용됩니다."
+    - ""
+    - "&e[제작 재료]"
+  stats:
+    def: 2

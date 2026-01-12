@@ -29,6 +29,9 @@ public class HookManager extends Manager {
     /** PlaceholderAPI 후킹 */
     private PapiHook papiHook;
 
+    /** Towny 후킹 */
+    private TownyHook townyHook;
+
     /**
      * HookManager 생성자
      * 
@@ -48,6 +51,11 @@ public class HookManager extends Manager {
         // PlaceholderAPI 후킹
         if (plugin.getConfig().getBoolean("hooks.placeholderapi-enabled", true)) {
             setupPlaceholderAPI();
+        }
+
+        // Towny 후킹
+        if (plugin.getConfig().getBoolean("hooks.towny-enabled", true)) {
+            setupTowny();
         }
 
         enabled = true;
@@ -111,6 +119,24 @@ public class HookManager extends Manager {
     }
 
     /**
+     * Towny 플러그인 연동을 설정합니다.
+     */
+    private void setupTowny() {
+        if (!isPluginEnabled("Towny")) {
+            plugin.getLogger().info("Towny 플러그인을 찾을 수 없습니다. 타운 기능이 비활성화됩니다.");
+            return;
+        }
+
+        townyHook = new TownyHook(plugin);
+        if (townyHook.isEnabled()) {
+            plugin.getLogger().info("Towny 연동 완료!");
+        } else {
+            plugin.getLogger().warning("Towny 연동 실패.");
+            townyHook = null;
+        }
+    }
+
+    /**
      * 특정 플러그인이 활성화되어 있는지 확인합니다.
      * 
      * @param pluginName 플러그인 이름
@@ -154,5 +180,23 @@ public class HookManager extends Manager {
      */
     public PapiHook getPapiHook() {
         return papiHook;
+    }
+
+    /**
+     * Towny 후킹이 활성화되어 있는지 확인합니다.
+     * 
+     * @return Towny 활성화 여부
+     */
+    public boolean isTownyEnabled() {
+        return townyHook != null && townyHook.isEnabled();
+    }
+
+    /**
+     * Towny 후킹 인스턴스를 반환합니다.
+     * 
+     * @return TownyHook 인스턴스 (없으면 null)
+     */
+    public TownyHook getTownyHook() {
+        return townyHook;
     }
 }

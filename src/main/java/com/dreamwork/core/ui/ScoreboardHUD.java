@@ -75,40 +75,24 @@ public class ScoreboardHUD {
 
         // 데이터 수집
         UUID uuid = player.getUniqueId();
-        UserJobData jobData = jobManager.getUserJob(uuid);
         UserData userData = storageManager.getUserData(uuid);
 
         if (userData == null)
             return; // 데이터 로드 전이면 패스
 
-        int line = 10;
+        int line = 15;
 
         // 공백
         setScore(objective, "§7§m          ", line--);
 
-        // 직업 정보
-        String jobName = "없음";
-        int level = 0;
-        double exp = 0;
-        double maxExp = 0;
+        // 다중 직업 정보 - 가장 높은 3개 직업 표시
+        setScore(objective, "§e§l직업 현황", line--);
 
-        if (jobData != null && jobData.hasJob()) {
-            var job = jobManager.getJob(jobData.getJobId());
-            if (job != null) {
-                jobName = job.getDisplayName();
-                level = jobData.getLevel();
-                exp = jobData.getCurrentExp();
-                maxExp = jobManager.getRequiredExp(level);
-            }
-        }
-
-        setScore(objective, "§e직업: §f" + jobName, line--);
-        setScore(objective, "§e레벨: §f" + level, line--);
-        if (maxExp > 0) {
-            setScore(objective, "§e경험치: §f" + String.format("%.0f", exp) + "§7/§f" + String.format("%.0f", maxExp),
-                    line--);
-        } else {
-            setScore(objective, "§e경험치: §f-", line--);
+        for (com.dreamwork.core.job.JobType jobType : com.dreamwork.core.job.JobType.values()) {
+            int level = userData.getJobLevel(jobType);
+            String icon = jobType.getIcon();
+            String name = jobType.getDisplayName();
+            setScore(objective, "§7" + icon + " §f" + name + " §7Lv.§e" + level, line--);
         }
 
         // 공백
@@ -125,16 +109,34 @@ public class ScoreboardHUD {
         }
 
         double maxMana = 100 + (totalInt * 2);
-        setScore(objective, "§b기력: §f" + (int) mana + "§7/§f" + (int) maxMana, line--);
+        String manaBar = createBar(mana, maxMana, "§b", "§7");
+        setScore(objective, "§b기력: " + manaBar + " §f" + (int) mana, line--);
 
-        // 경제 정보 (Vault 연동 시)
-        // TODO: Vault 연동
+        // 총 레벨
+        int totalLevel = userData.getTotalJobLevel();
+        setScore(objective, "§6총 레벨: §e" + totalLevel, line--);
 
         // 공백
         setScore(objective, "§f§m          ", line--);
 
         // 서버 정보
         setScore(objective, "§7play.dreamwork.mc", line--);
+    }
+
+    /**
+     * 진행 바를 생성합니다.
+     */
+    private String createBar(double current, double max, String fillColor, String emptyColor) {
+        int filled = (int) ((current / max) * 10);
+        StringBuilder bar = new StringBuilder();
+        for (int i = 0; i < 10; i++) {
+            if (i < filled) {
+                bar.append(fillColor).append("|");
+            } else {
+                bar.append(emptyColor).append("|");
+            }
+        }
+        return bar.toString();
     }
 
     private void setScore(Objective objective, String text, int score) {
