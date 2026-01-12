@@ -1,70 +1,187 @@
+# ============================================
+# DreamWork - 사냥꾼 (Hunter) 직업 설정
+# ============================================
+# 야생의 수호자 - 몬스터 사냥, 펫 테이밍, 보스 레이드 주도
+
 id: "hunter"
 display_name: "사냥꾼"
+description: "야생의 수호자 - 몬스터 사냥, 펫 테이밍, 용병 활동"
+icon: "BOW"
 max_level: 100
 exp_formula: "150 + (level * 30) + (level^2 * 5)"
 
+# ============================================
+# 스탯 보너스 (레벨당)
+# ============================================
+# Plan: 힘 +0.5%, 치명타 확률 +0.2%, 민첩 +0.1%
+stats_per_level:
+  STR: 0.5    # 힘 - 근접 공격력
+  DEX: 0.2    # 민첩 - 치명타 확률
+  CON: 0.1    # 체력 - 카이팅용
+
+# ============================================
+# 경험치 획득처 (Plan 기준 XP/Money 테이블)
+# ============================================
+# | 대상                  | 등급        | 기본 경험치 | 기본 수입 (D) | 비고          |
+# |-----------------------|-------------|-------------|---------------|---------------|
+# | 좀비/스켈레톤/거미    | 일반        | 2.0         | 1.0           | 가장 기본     |
+# | 크리퍼/엔더맨/마녀    | 고급        | 5.0         | 3.0           | 특수 재료     |
+# | 피글린/블레이즈       | 네더        | 8.0         | 5.0           | 위험 지역     |
+# | 알파 몬스터           | 엘리트      | 50.0        | 100.0         | 필드 미니보스 |
+# | 워든/위더             | 보스        | 200.0       | 500.0         | 대량 경험치   |
+# | 현상수배범            | 퀘스트      | 100.0       | 1000+         | 선착순 보상   |
+
 triggers:
+  # 일반 등급 (Common)
   - type: ENTITY_KILL
     target: ZOMBIE
-    amount: 10.0
+    exp: 2.0
+    money: 1.0
   - type: ENTITY_KILL
     target: SKELETON
-    amount: 10.0
+    exp: 2.0
+    money: 1.0
   - type: ENTITY_KILL
     target: SPIDER
-    amount: 12.0
+    exp: 2.0
+    money: 1.0
+  - type: ENTITY_KILL
+    target: CAVE_SPIDER
+    exp: 3.0
+    money: 1.5
+  - type: ENTITY_KILL
+    target: DROWNED
+    exp: 3.0
+    money: 1.5
+  - type: ENTITY_KILL
+    target: HUSK
+    exp: 3.0
+    money: 1.5
+  - type: ENTITY_KILL
+    target: STRAY
+    exp: 3.0
+    money: 1.5
+  - type: ENTITY_KILL
+    target: SILVERFISH
+    exp: 2.0
+    money: 1.0
+  - type: ENTITY_KILL
+    target: SLIME
+    exp: 2.0
+    money: 1.0
+  - type: ENTITY_KILL
+    target: MAGMA_CUBE
+    exp: 3.0
+    money: 1.5
+  - type: ENTITY_KILL
+    target: PHANTOM
+    exp: 4.0
+    money: 2.0
+
+  # 고급 등급 (Uncommon)
   - type: ENTITY_KILL
     target: CREEPER
-    amount: 15.0
+    exp: 5.0
+    money: 3.0
   - type: ENTITY_KILL
     target: ENDERMAN
-    amount: 30.0
+    exp: 5.0
+    money: 3.0
   - type: ENTITY_KILL
     target: WITCH
-    amount: 25.0
+    exp: 5.0
+    money: 3.0
+  - type: ENTITY_KILL
+    target: PILLAGER
+    exp: 5.0
+    money: 3.0
+  - type: ENTITY_KILL
+    target: VINDICATOR
+    exp: 6.0
+    money: 4.0
+  - type: ENTITY_KILL
+    target: EVOKER
+    exp: 8.0
+    money: 5.0
+  - type: ENTITY_KILL
+    target: GUARDIAN
+    exp: 6.0
+    money: 4.0
+
+  # 네더 등급 (Nether)
+  - type: ENTITY_KILL
+    target: PIGLIN
+    exp: 8.0
+    money: 5.0
+  - type: ENTITY_KILL
+    target: PIGLIN_BRUTE
+    exp: 12.0
+    money: 8.0
   - type: ENTITY_KILL
     target: BLAZE
-    amount: 40.0
+    exp: 8.0
+    money: 5.0
   - type: ENTITY_KILL
     target: WITHER_SKELETON
-    amount: 50.0
+    exp: 10.0
+    money: 6.0
   - type: ENTITY_KILL
     target: GHAST
-    amount: 60.0
+    exp: 10.0
+    money: 6.0
   - type: ENTITY_KILL
-    target: IRON_GOLEM
-    amount: 100.0
+    target: HOGLIN
+    exp: 8.0
+    money: 5.0
+
+  # 엘리트 등급 (Elite) - 알파 몬스터
+  - type: ENTITY_KILL
+    target: ELDER_GUARDIAN
+    exp: 50.0
+    money: 100.0
+  - type: ENTITY_KILL
+    target: RAVAGER
+    exp: 40.0
+    money: 80.0
+
+  # 보스 등급 (Boss)
   - type: ENTITY_KILL
     target: WARDEN
-    amount: 500.0
+    exp: 200.0
+    money: 500.0
   - type: ENTITY_KILL
     target: WITHER
-    amount: 1000.0
+    exp: 200.0
+    money: 500.0
   - type: ENTITY_KILL
     target: ENDER_DRAGON
-    amount: 2000.0
+    exp: 500.0
+    money: 1000.0
 
+# ============================================
+# 레벨업 보상
+# ============================================
 rewards:
   level_10:
-    message: "&c[사냥꾼] &f약점 포착(Passive) 기술을 익혔습니다! (치명타 확률 5% 증가)"
+    message: "&c[사냥꾼] &f급소 가격(Passive) 기술을 익혔습니다! (치명타 확률 5% 증가)"
     stats:
       STR: 3
       DEX: 3
-    skill_unlock: "weakness_spot"
+    skill_unlock: "vital_strike"
   
   level_30:
-    message: "&c[사냥꾼] &f아드레날린(Active)이 분비됩니다! (이동속도/공격속도 증가)"
+    message: "&c[사냥꾼] &f사냥 본능(Active)이 깨어났습니다! (몬스터 투시 + 공격력 증가)"
     stats:
       STR: 6
       DEX: 6
-    skill_unlock: "adrenaline"
+    skill_unlock: "hunters_instinct"
 
   level_50:
-    message: "&c[사냥꾼] &f헤드헌터(Passive)가 되었습니다! (몹 머리 드롭)"
+    message: "&c[사냥꾼] &f야수 조련(Passive)을 깨달았습니다! (몬스터 테이밍 가능)"
     stats:
       STR: 10
       DEX: 8
-    skill_unlock: "headhunter"
+    skill_unlock: "beast_taming"
 
   level_80:
     message: "&c[사냥꾼] &4학살자&f 칭호를 획득했습니다!"
@@ -72,36 +189,194 @@ rewards:
       STR: 15
       DEX: 10
     money: 100000
-    skill_unlock: "slayer"
+    skill_unlock: "slayer_aura"
 
-stats_per_level:
-  STR: 1.0
-  DEX: 0.5
-  CON: 0.5
+  level_100:
+    message: "&c[사냥꾼] &4§l전설의 헌터&f 칭호를 획득했습니다!"
+    stats:
+      STR: 20
+      DEX: 15
+    money: 500000
+    commands:
+      - "lp user %player% parent add master_hunter"
 
+# ============================================
+# 스킬 목록 (Plan 기반)
+# ============================================
 skills:
-  weakness_spot:
-    name: "약점 포착"
+  # [패시브] 급소 가격 (Vital Strike)
+  vital_strike:
+    name: "급소 가격"
     type: PASSIVE
     unlock_level: 10
-    description: "치명타 확률이 5% 증가합니다."
+    description: "공격 시 일정 확률로 치명타 발동 (1.5배 데미지)"
+    scaling:
+      "1-30":
+        crit_chance: 0.10        # 10% 확률
+        crit_damage: 1.5         # 1.5배 데미지
+      "31-70":
+        crit_chance: 0.20        # 20% 확률
+        crit_damage: 1.8         # 1.8배 데미지
+      "71-100":
+        crit_chance: 0.30        # 30% 확률
+        crit_damage: 2.0         # 2배 데미지
+        speed_boost_on_crit: 1   # 적중 시 1초 이속 증가
 
-  adrenaline:
-    name: "아드레날린"
+  # [액티브] 사냥 본능 (Hunter's Instinct)
+  hunters_instinct:
+    name: "사냥 본능"
     type: ACTIVE
     unlock_level: 30
-    cooldown: 180
+    cooldown: 300               # 5분 (300초)
     mana_cost: 40
-    description: "10초간 이동 속도 II, 성급함 II 버프를 얻습니다."
+    duration: 20                # 20초
+    description: "20초간 주변 30블록 몬스터 발광 + 공격력 20% 증가"
+    range: 30
+    effects:
+      glowing: true
+      damage_boost: 0.20
+      speed_boost: 0.10
 
-  headhunter:
-    name: "헤드헌터"
+  # [패시브] 야수 조련 (Beast Taming)
+  beast_taming:
+    name: "야수 조련"
     type: PASSIVE
     unlock_level: 50
-    description: "몬스터 처치 시 5% 확률로 해당 몬스터의 머리를 획득합니다."
+    description: "체력 20% 이하 몬스터에게 '제압용 목줄' 사용 시 펫으로 영입 가능"
+    health_threshold: 0.20
+    tamable_mobs:
+      - SPIDER
+      - CAVE_SPIDER
+      - POLAR_BEAR
+      - FOX
+      - WOLF
+      - ZOMBIE       # 특수
+      - SKELETON     # 특수
+    success_base_chance: 0.30
+    success_per_level: 0.005
 
-  slayer:
-    name: "학살자"
+  # [패시브] 학살자 오라
+  slayer_aura:
+    name: "학살자 오라"
     type: PASSIVE
     unlock_level: 80
-    description: "체력이 30% 이하인 적에게 주는 데미지가 20% 증가합니다."
+    description: "체력 30% 이하인 적에게 주는 데미지 20% 증가"
+    low_health_threshold: 0.30
+    damage_boost: 0.20
+
+# ============================================
+# 슬레이어 도감 시스템 (Plan: Slayer's Knowledge)
+# ============================================
+slayer_knowledge:
+  enabled: true
+  
+  # 지식 레벨업 조건
+  tiers:
+    level_1:
+      kills_required: 100
+      damage_bonus: 0.05         # 해당 몹에게 +5% 데미지
+    level_2:
+      kills_required: 500
+      damage_bonus: 0.10
+      damage_reduction: 0.10     # 해당 몹에게 받는 데미지 -10%
+    level_3:
+      kills_required: 1000
+      damage_bonus: 0.15
+      damage_reduction: 0.15
+      exp_bonus: 1.5             # 경험치 1.5배
+    level_max:
+      kills_required: 5000
+      damage_bonus: 0.25
+      damage_reduction: 0.25
+      exp_bonus: 2.0
+      money_bonus: 1.5
+
+# ============================================
+# 몹 티어 시스템 (Plan: Alpha Monster)
+# ============================================
+mob_tier:
+  enabled: true
+  
+  # 알파 몬스터 스폰 설정
+  alpha:
+    spawn_chance: 0.01          # 1% 확률로 알파 스폰
+    name_prefix: "&c§l[ALPHA] "
+    size_multiplier: 2.0        # 크기 2배
+    health_multiplier: 5.0      # 체력 5배
+    damage_multiplier: 2.0      # 데미지 2배
+    drop_multiplier: 3.0        # 드롭 3배
+    exp_multiplier: 10.0        # 경험치 10배
+    particle_effect: "FLAME"
+    announcement: true          # 스폰 시 서버 알림
+    guaranteed_drops:
+      - item: "reinforced_leather"
+        chance: 1.00
+      - item: "monster_essence"
+        chance: 0.50
+
+# ============================================
+# 현상금 시스템 (Plan: Bounty)
+# ============================================
+bounty_system:
+  enabled: true
+  
+  # 자동 발생 현상금
+  auto_bounty:
+    interval: 600              # 10분마다
+    reward_base: 1000          # 기본 보상 1000D
+    reward_per_distance: 0.5   # 거리당 추가 보상
+    exp_base: 100.0
+    announcement: "&c[현상수배] &f좌표 X: %x%, Z: %z% 근처의 &e%mob%&f을 처치하시오!"
+
+# ============================================
+# 블러드 문 이벤트 (Plan: Blood Moon)
+# ============================================
+blood_moon:
+  enabled: true
+  cycle_days: 7                 # 게임 7일마다
+  spawn_multiplier: 3.0         # 몬스터 스폰 3배
+  mob_speed_boost: 0.20         # 이동속도 +20%
+  mob_damage_boost: 0.30        # 공격력 +30%
+  exp_multiplier: 2.0           # 경험치 2배
+  announcement: "&4§l[블러드 문] &c붉은 달이 떠올랐습니다... 몬스터들이 광폭화합니다!"
+
+# ============================================
+# 특수 아이템 드롭
+# ============================================
+special_drops:
+  # 강화 가죽 (갑옷 안감 재료)
+  reinforced_leather:
+    enabled: true
+    base_chance: 0.05
+    trigger_mobs:
+      - ZOMBIE
+      - SKELETON
+      - SPIDER
+      - CAVE_SPIDER
+
+  # 키틴질 갑각
+  chitin_shell:
+    enabled: true
+    base_chance: 0.08
+    trigger_mobs:
+      - SPIDER
+      - CAVE_SPIDER
+      - SILVERFISH
+      - ENDERMITE
+
+  # 몬스터 에센스
+  monster_essence:
+    enabled: true
+    base_chance: 0.02
+    level_bonus: 0.0002
+    trigger_mobs: "ALL"
+
+  # 영혼의 조각 (보스 토템 재료)
+  soul_fragment:
+    enabled: true
+    base_chance: 0.01
+    trigger_mobs:
+      - WITHER_SKELETON
+      - GHAST
+      - BLAZE
+      - ENDERMAN

@@ -1,100 +1,299 @@
 # ============================================
 # DreamWork - 탐험가 (Explorer) 직업 설정
 # ============================================
-# 맵을 탐사하고, 던전을 발견하며, 좌표를 판매하는 직업
+# 지평선의 기록자 - 맵 탐사, 던전 발견, 좌표 판매, 배달
 
-job:
-  id: explorer
-  name: "탐험가"
-  description: "지평선의 기록자 - 맵 탐사, 던전 발견, 좌표 판매"
-  icon: "FILLED_MAP"
-  max-level: 100
+id: "explorer"
+display_name: "탐험가"
+description: "지평선의 기록자 - 맵 탐사, 던전 발견, 좌표 판매"
+icon: "FILLED_MAP"
+max_level: 100
+exp_formula: "100 + (level * 20) + (level^2 * 4)"
 
-# 레벨업에 필요한 기본 경험치 (레벨 1->2)
-base-exp: 100
-
-# 레벨당 경험치 증가율 (기본값: 1.15 = 15% 증가)
-exp-multiplier: 1.15
-
+# ============================================
 # 스탯 보너스 (레벨당)
-stats:
-  agility: 0.3          # 민첩 - 이동 속도
-  fall-reduction: 0.5   # 낙하 데미지 감소 %
-  stamina: 2.0          # 스태미나 (파쿠르 기술용)
+# ============================================
+# Plan: 민첩 +0.3%, 낙하감소 +0.5%, 스태미나 +2
+stats_per_level:
+  DEX: 0.3    # 민첩 - 이동 속도
+  CON: 0.1    # 체력 - 낙하 데미지 감소용
+  INT: 0.2    # 지능 - 스태미나/쿨타임
 
-# 경험치 획득 설정
-exp-sources:
-  # 새로운 청크 발견
-  discover-chunk:
+# ============================================
+# 경험치 획득처 (Plan 기준 XP/Money 테이블)
+# ============================================
+# | 대상             | 세부 조건       | 기본 경험치 | 기본 수입 (D) | 비고          |
+# |------------------|-----------------|-------------|---------------|---------------|
+# | 새로운 지역 발견 | 신규 청크 진입  | 5.0         | 2.0           |               |
+# | 구조물 발견      | 마을, 유적 등   | 50.0        | 30.0          | 화면 타이틀   |
+# | 이동 거리        | 100블록당       | 1.0         | 0.1           | 악용 방지     |
+# | 몬스터 도감      | 새로운 몹 조우  | 10.0        | 5.0           |               |
+# | 던전 지도 완성   | 지도 조각 합성  | 100.0       | 200.0         |               |
+# | 특송 배달 완료   | 타운 퀘스트     | 30.0        | 150.0         | 거리 비례     |
+
+triggers:
+  # 새로운 청크/바이옴 발견
+  discover_chunk:
     exp: 5.0
     money: 2.0
     
-  # 새로운 바이옴 발견
-  discover-biome:
+  discover_biome:
     exp: 25.0
     money: 15.0
     
-  # 구조물 발견 (마을, 사원, 유적 등)
-  discover-structure:
+  # 구조물 발견 (종류별)
+  discover_structure:
     village:
       exp: 50.0
       money: 30.0
-    temple:
+    pillager_outpost:
+      exp: 50.0
+      money: 30.0
+    desert_pyramid:
       exp: 75.0
       money: 50.0
+    jungle_pyramid:
+      exp: 75.0
+      money: 50.0
+    igloo:
+      exp: 40.0
+      money: 25.0
+    shipwreck:
+      exp: 60.0
+      money: 40.0
+    ocean_ruins:
+      exp: 50.0
+      money: 35.0
+    ocean_monument:
+      exp: 150.0
+      money: 100.0
+    mansion:
+      exp: 200.0
+      money: 150.0
     stronghold:
       exp: 200.0
       money: 150.0
     ancient_city:
       exp: 300.0
       money: 200.0
-    ocean_monument:
-      exp: 150.0
-      money: 100.0
     end_city:
       exp: 250.0
       money: 180.0
+    nether_fortress:
+      exp: 100.0
+      money: 75.0
+    bastion_remnant:
+      exp: 150.0
+      money: 100.0
+    trail_ruins:
+      exp: 100.0
+      money: 80.0
       
   # 이동 거리 (100블록당)
-  travel-distance:
+  travel_distance:
     exp: 1.0
     money: 0.1
+    interval: 100              # 100블록마다
+
+  # 몬스터 도감 (새로운 몹 첫 조우)
+  discover_mob:
+    exp: 10.0
+    money: 5.0
     
   # 배달 퀘스트 완료
-  delivery-complete:
-    base-exp: 30.0
-    base-money: 150.0
-    distance-bonus: 0.01  # 블록당 추가 보상
+  delivery_complete:
+    base_exp: 30.0
+    base_money: 150.0
+    distance_bonus_exp: 0.01   # 블록당 추가 경험치
+    distance_bonus_money: 0.05 # 블록당 추가 돈
 
-# 스킬 설정
+# ============================================
+# 레벨업 보상
+# ============================================
+rewards:
+  level_10:
+    message: "&e[탐험가] &f가벼운 발걸음(Passive)이 해금되었습니다! (이동 속도 증가)"
+    stats:
+      DEX: 5
+      CON: 2
+    skill_unlock: "light_step"
+  
+  level_25:
+    message: "&e[탐험가] &f낙법(Passive)을 배웠습니다! (낙하 데미지 감소)"
+    stats:
+      DEX: 8
+      CON: 5
+    skill_unlock: "roll"
+
+  level_50:
+    message: "&e[탐험가] &f이단 점프(Passive)가 해금되었습니다!"
+    stats:
+      DEX: 12
+      CON: 8
+    skill_unlock: "double_jump"
+
+  level_75:
+    message: "&e[탐험가] &f그래플링 훅 제작이 가능해졌습니다!"
+    stats:
+      DEX: 15
+      CON: 10
+    unlock_recipe: "grappling_hook"
+
+  level_80:
+    message: "&e[탐험가] &6모험왕&f 칭호를 획득했습니다!"
+    stats:
+      DEX: 18
+      CON: 12
+    money: 100000
+    skill_unlock: "recall"
+
+  level_100:
+    message: "&e[탐험가] &b§l지평선의 기록자&f 칭호를 획득했습니다!"
+    stats:
+      DEX: 25
+      CON: 15
+    money: 500000
+    commands:
+      - "lp user %player% parent add master_explorer"
+
+# ============================================
+# 스킬 목록 (Plan 기반)
+# ============================================
 skills:
-  # 패시브: 가벼운 발걸음
-  light-step:
-    enabled: true
-    speed-bonus-per-level: 0.002   # 레벨당 이동속도 증가
-    fall-damage-reduction: 0.5     # 레벨당 낙하 데미지 감소 %
-    
-  # 액티브: 귀환의 본능
-  recall:
-    enabled: true
-    cooldown: 1800        # 30분
-    cast-time: 5          # 5초 캐스팅
-    combat-block: true    # 전투 중 사용 불가
-    
-  # 액티브: 아틀라스 기록 (최초 발견 보너스)
-  atlas:
-    enabled: true
-    first-finder-bonus: 3.0   # 최초 발견 시 경험치/돈 3배
+  # [패시브] 가벼운 발걸음
+  light_step:
+    name: "가벼운 발걸음"
+    type: PASSIVE
+    unlock_level: 10
+    description: "기본 이동 속도 영구 증가"
+    speed_bonus_per_level: 0.002  # 레벨당 +0.2%
+    fall_damage_reduction: 0.005  # 레벨당 낙하 데미지 0.5% 감소
 
-# 레벨별 해금
-unlocks:
-  10:
-    - "이동 속도 +5%"
-  25:
-    - "낙법 스킬 해금"
-  50:
-    - "이단 점프 해금"
-  75:
-    - "그래플링 훅 제작 가능"
-  100:
-    - "[지평선의 기록자] 칭호 획득"
+  # [패시브] 낙법
+  roll:
+    name: "낙법"
+    type: PASSIVE
+    unlock_level: 25
+    description: "낙하 시 Shift 타이밍 맞추면 데미지 무효화"
+    timing_window_ms: 200        # 200ms 타이밍 윈도우
+    momentum_preserve: true      # 모멘텀 유지 (전방 이동)
+
+  # [패시브] 이단 점프
+  double_jump:
+    name: "이단 점프"
+    type: PASSIVE
+    unlock_level: 50
+    description: "공중에서 한 번 더 점프"
+    stamina_cost: 10
+    cooldown: 3000               # 3초
+
+  # [액티브] 귀환의 본능
+  recall:
+    name: "귀환의 본능"
+    type: ACTIVE
+    unlock_level: 80
+    cooldown: 1800               # 30분
+    mana_cost: 50
+    cast_time: 5000              # 5초 캐스팅
+    combat_block: true           # 전투 중 사용 불가
+    description: "지정된 타운 광장으로 즉시 텔레포트"
+
+# ============================================
+# 아틀라스 기록 시스템 (Plan: The Atlas)
+# ============================================
+atlas_system:
+  enabled: true
+  
+  # 최초 발견자 보너스
+  first_finder:
+    enabled: true
+    multiplier: 3.0              # 경험치/돈 3배
+    announcement: "&e[최초 발견] &f%player%님이 &6%structure%&f를 발견했습니다!"
+    permanent_marker: true       # Dynmap 마커에 이름 영구 기록
+
+  # 바이옴 탐험가 도전
+  biome_explorer:
+    enabled: true
+    all_biomes_reward:
+      title: "&b[바이옴 마스터]"
+      money: 100000
+      exp: 10000
+
+# ============================================
+# 스태미나 시스템 (Plan: Stamina for Parkour)
+# ============================================
+stamina:
+  enabled: true
+  base_max: 100
+  per_level: 2                   # 레벨당 +2
+  regen_rate: 5                  # 초당 5 회복
+  regen_delay: 2000              # 사용 후 2초 딜레이
+
+# ============================================
+# 배달 퀘스트 시스템 (Plan: Courier Service)
+# ============================================
+delivery_quest:
+  enabled: true
+  
+  # 퀘스트 생성 설정
+  generation:
+    interval: 300                # 5분마다 신규 퀘스트
+    max_active: 5                # 동시 활성 최대 5개
+    min_distance: 500            # 최소 500블록
+    max_distance: 5000           # 최대 5000블록
+    time_limit_per_block: 0.3    # 블록당 0.3초 제한시간
+
+  # 보상 설정
+  rewards:
+    base_money: 150
+    per_block_money: 0.05
+    base_exp: 30.0
+    per_block_exp: 0.01
+
+  # 실패 패널티
+  failure:
+    item_loss: true              # 아이템 분실
+    reputation_loss: 5           # 명성 -5
+
+# ============================================
+# 특수 아이템 설정
+# ============================================
+special_items:
+  # 워프 스크롤 (좌표 저장 아이템)
+  warp_scroll:
+    enabled: true
+    craft_recipe:
+      - "PAPER:1"
+      - "FEATHER:1"
+      - "INK_SAC:1"              # 기록용 잉크
+    required_level: 20
+    single_use: true
+
+  # 바이옴 캡슐
+  biome_capsule:
+    enabled: true
+    required_level: 40
+    effect: "타운 내 땅 색상을 해당 바이옴으로 변경"
+
+  # 그래플링 훅
+  grappling_hook:
+    enabled: true
+    required_level: 75
+    cooldown: 10000              # 10초
+    max_distance: 30
+    craft_recipe:
+      - "TRIPWIRE_HOOK:1"
+      - "CHAIN:3"
+      - "IRON_INGOT:2"
+
+  # 여행자의 텐트
+  portable_tent:
+    enabled: true
+    required_level: 60
+    size: "3x3x3"
+    includes:
+      - BED
+      - ENDER_CHEST
+    mob_protection: true
+    reusable: true
+    durability: 50

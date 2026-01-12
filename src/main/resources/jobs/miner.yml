@@ -1,112 +1,170 @@
+# ============================================
+# DreamWork - 광부 (Miner) 직업 설정
+# ============================================
+# 대지의 개척자 - 광물 채굴, 합금 제작, 건축 자재 공급
+
 id: "miner"
 display_name: "광부"
+description: "대지의 개척자 - 광물 채굴, 합금 제작, 건축 자재 공급"
+icon: "IRON_PICKAXE"
 max_level: 100
 exp_formula: "100 + (level * 25) + (level^2 * 5)"
 
-# 경험치 획득처
+# ============================================
+# 스탯 보너스 (레벨당)
+# ============================================
+# Plan: 강인함 +0.5%, 채굴속도 +0.2%, 폐활량 +1
+stats_per_level:
+  CON: 0.5    # 강인함 - 받는 데미지 감소
+  STR: 0.2    # 힘 - 채굴 속도/데미지
+  DEX: 0.1    # 손재주
+
+# ============================================
+# 경험치 획득처 (Plan 기준 XP/Money 테이블)
+# ============================================
+# | 대상           | 기본 경험치 | 기본 수입 (D) | 비고              |
+# |----------------|-------------|---------------|-------------------|
+# | 돌/심층암       | 0           | 0             | Default           |
+# | 석탄/구리/철    | 5.0         | 2.0           | 초반 주 수입원    |
+# | 금/레드스톤/청금 | 15.0       | 5.0           | 중반 수입원       |
+# | 다이아/에메랄드 | 50.0        | 30.0          | 대박 경험치       |
+# | 고대 잔해       | 150.0       | 100.0         | 최고 수준 보상    |
+# | 드림 스톤       | 500.0       | 200.0         | 극악의 확률       |
+
 triggers:
-  # 일반 광물
+  # 기본 돌류 (경험치 미미)
   - type: BLOCK_BREAK
     target: STONE
-    amount: 1.0
+    exp: 0
+    money: 0
   - type: BLOCK_BREAK
     target: COBBLESTONE
-    amount: 0.5
+    exp: 0
+    money: 0
   - type: BLOCK_BREAK
     target: DEEPSLATE
-    amount: 1.5
+    exp: 0
+    money: 0
   - type: BLOCK_BREAK
     target: DIORITE
-    amount: 0.5
+    exp: 0
+    money: 0
   - type: BLOCK_BREAK
     target: ANDESITE
-    amount: 0.5
+    exp: 0
+    money: 0
   - type: BLOCK_BREAK
     target: GRANITE
-    amount: 0.5
+    exp: 0
+    money: 0
   - type: BLOCK_BREAK
     target: TUFF
-    amount: 0.5
+    exp: 0
+    money: 0
   
-  # 석탄 계열
+  # 석탄 계열 (초반 주 수입원)
   - type: BLOCK_BREAK
     target: COAL_ORE
-    amount: 5.0
+    exp: 5.0
+    money: 2.0
   - type: BLOCK_BREAK
     target: DEEPSLATE_COAL_ORE
-    amount: 6.0
+    exp: 6.0
+    money: 2.5
 
-  # 철 계열
-  - type: BLOCK_BREAK
-    target: IRON_ORE
-    amount: 10.0
-  - type: BLOCK_BREAK
-    target: DEEPSLATE_IRON_ORE
-    amount: 12.0
-  - type: BLOCK_BREAK
-    target: RAW_IRON_BLOCK
-    amount: 20.0
-
-  # 구리 계열
+  # 구리 계열 (초반)
   - type: BLOCK_BREAK
     target: COPPER_ORE
-    amount: 8.0
+    exp: 5.0
+    money: 2.0
   - type: BLOCK_BREAK
     target: DEEPSLATE_COPPER_ORE
-    amount: 10.0
+    exp: 6.0
+    money: 2.5
 
-  # 금 계열
+  # 철 계열 (초반 주 수입원)
+  - type: BLOCK_BREAK
+    target: IRON_ORE
+    exp: 5.0
+    money: 2.0
+  - type: BLOCK_BREAK
+    target: DEEPSLATE_IRON_ORE
+    exp: 6.0
+    money: 2.5
+  - type: BLOCK_BREAK
+    target: RAW_IRON_BLOCK
+    exp: 15.0
+    money: 6.0
+
+  # 금 계열 (중반 수입원)
   - type: BLOCK_BREAK
     target: GOLD_ORE
-    amount: 20.0
+    exp: 15.0
+    money: 5.0
   - type: BLOCK_BREAK
     target: DEEPSLATE_GOLD_ORE
-    amount: 25.0
+    exp: 18.0
+    money: 6.0
   - type: BLOCK_BREAK
     target: NETHER_GOLD_ORE
-    amount: 15.0
+    exp: 12.0
+    money: 4.0
 
-  # 레드스톤 계열
+  # 레드스톤 계열 (중반)
   - type: BLOCK_BREAK
     target: REDSTONE_ORE
-    amount: 12.0
+    exp: 15.0
+    money: 5.0
   - type: BLOCK_BREAK
     target: DEEPSLATE_REDSTONE_ORE
-    amount: 15.0
+    exp: 18.0
+    money: 6.0
 
-  # 청금석 계열
+  # 청금석 계열 (중반)
   - type: BLOCK_BREAK
     target: LAPIS_ORE
-    amount: 15.0
+    exp: 15.0
+    money: 5.0
   - type: BLOCK_BREAK
     target: DEEPSLATE_LAPIS_ORE
-    amount: 18.0
+    exp: 18.0
+    money: 6.0
 
-  # 다이아몬드 계열
+  # 다이아몬드 계열 (대박)
   - type: BLOCK_BREAK
     target: DIAMOND_ORE
-    amount: 50.0
+    exp: 50.0
+    money: 30.0
   - type: BLOCK_BREAK
     target: DEEPSLATE_DIAMOND_ORE
-    amount: 60.0
+    exp: 60.0
+    money: 36.0
 
-  # 에메랄드 계열
+  # 에메랄드 계열 (대박)
   - type: BLOCK_BREAK
     target: EMERALD_ORE
-    amount: 100.0
+    exp: 50.0
+    money: 30.0
   - type: BLOCK_BREAK
     target: DEEPSLATE_EMERALD_ORE
-    amount: 120.0
+    exp: 60.0
+    money: 36.0
 
   # 네더 광물
   - type: BLOCK_BREAK
     target: NETHER_QUARTZ_ORE
-    amount: 15.0
+    exp: 15.0
+    money: 5.0
+    
+  # 고대 잔해 (최고 수준)
   - type: BLOCK_BREAK
     target: ANCIENT_DEBRIS
-    amount: 200.0
+    exp: 150.0
+    money: 100.0
 
+# ============================================
 # 레벨업 보상
+# ============================================
 rewards:
   level_10:
     message: "&e[광부] &f단단한 피부(Passive)가 해금되었습니다! (받는 물리 데미지 5% 감소)"
@@ -127,7 +185,7 @@ rewards:
     stats:
       CON: 15
       STR: 8
-    skill_unlock: "miner_blast"
+    skill_unlock: "vein_miner"
 
   level_80:
     message: "&e[광부] &6전설의 광부&f 칭호를 획득했습니다!"
@@ -146,37 +204,110 @@ rewards:
     commands:
       - "lp user %player% parent add master_miner"
 
-# 레벨별 스탯 상승 (1레벨당)
-stats_per_level:
-  CON: 1.0
-  STR: 0.5
-
-# 스킬 목록
+# ============================================
+# 스킬 목록 (Plan 기반)
+# ============================================
 skills:
+  # [패시브] 단단한 피부
   tough_skin:
     name: "단단한 피부"
     type: PASSIVE
     unlock_level: 10
     description: "물리 데미지를 5% 감소시킵니다."
+    damage_reduction: 0.05
   
+  # [액티브] 슈퍼 히트 (쿨타임 5분)
   superheat:
     name: "슈퍼 히트"
     type: ACTIVE
     unlock_level: 30
-    cooldown: 300
+    cooldown: 300      # 5분 (300초)
     mana_cost: 30
-    description: "30초간 채광한 광물을 즉시 제련 상태로 획득합니다."
+    duration: 30       # 30초
+    description: "30초간 채광한 광물을 즉시 제련 상태로 획득 + 성급함II + 화염저항"
+    effects:
+      auto_smelt: true
+      haste_level: 2
+      fire_resistance: true
   
-  miner_blast:
-    name: "광맥 발견"
-    type: ACTIVE
+  # [패시브] 광맥 감지 (VeinMiner)
+  vein_miner:
+    name: "광맥 감지"
+    type: PASSIVE
     unlock_level: 50
-    cooldown: 30
-    mana_cost: 20
-    description: "주변 3×3×3 범위의 광석을 한 번에 채굴합니다."
+    description: "Shift+채굴 시 동일 광물 연쇄 파괴"
+    # 레벨별 스케일링
+    scaling:
+      "1-20":
+        chance: 0.10        # 10% 확률
+        max_blocks: 3       # 최대 3개
+      "21-60":
+        chance: 0.30        # 30% 확률
+        max_blocks: 9       # 최대 9개 (3x3)
+      "61-100":
+        chance: 0.50        # 50% 확률
+        max_blocks: 15      # 최대 15개
+        durability_reduction: 0.20  # 내구도 소모 20% 감소
   
+  # [패시브] 보석 탐지
   gem_detector:
     name: "보석 탐지"
     type: PASSIVE
     unlock_level: 80
     description: "돌 채광 시 0.1% 확률로 랜덤 보석을 드롭합니다."
+    drop_chance: 0.001
+
+# ============================================
+# 채굴 콤보 시스템 설정 (Plan: 채굴 리듬)
+# ============================================
+mining_combo:
+  enabled: true
+  timeout_ms: 5000      # 5초 이내 채굴 유지
+  max_combo: 100
+  # 콤보 보상
+  rewards:
+    30:
+      speed_bonus: 0.10   # 이동속도 +10%
+    50:
+      rare_drop_multiplier: 1.5  # 희귀 드롭 1.5배
+    100:
+      exp_multiplier: 2.0  # 경험치 2배
+      particle_effect: "TOTEM"
+
+# ============================================
+# 특수 드롭 설정
+# ============================================
+special_drops:
+  # 드림 스톤 (Plan: 0.1% 확률)
+  dream_stone:
+    enabled: true
+    base_chance: 0.001       # 0.1%
+    level_bonus: 0.00001     # 레벨당 +0.001%
+    trigger_blocks:
+      - STONE
+      - DEEPSLATE
+      - COAL_ORE
+      - IRON_ORE
+      - GOLD_ORE
+      - DIAMOND_ORE
+      - ANCIENT_DEBRIS
+      
+  # 미확인 광물 (Plan: 채굴 시 낮은 확률)
+  unidentified_ore:
+    enabled: true
+    base_chance: 0.001       # 0.1%
+    level_bonus: 0.0001      # 레벨당 +0.01%
+    trigger_blocks:
+      - COAL_ORE
+      - DEEPSLATE_COAL_ORE
+      - IRON_ORE
+      - DEEPSLATE_IRON_ORE
+      - COPPER_ORE
+      - DEEPSLATE_COPPER_ORE
+      - GOLD_ORE
+      - DEEPSLATE_GOLD_ORE
+      - DIAMOND_ORE
+      - DEEPSLATE_DIAMOND_ORE
+      - EMERALD_ORE
+      - DEEPSLATE_EMERALD_ORE
+      - ANCIENT_DEBRIS

@@ -1,8 +1,10 @@
 # ================================================================
 # DreamWork Core 커스텀 아이템 설정
 # ================================================================
+# Plan 기반 직업별 전용 장비 및 아이템
 
-# 예시: 초보자의 검
+# ==================== 공용 아이템 ====================
+
 starter_sword:
   material: IRON_SWORD
   name: "&f초보자의 검"
@@ -16,7 +18,127 @@ starter_sword:
   enchants:
     sharpness: 1
 
-# 예시: 광부의 곡괭이
+lucky_ring:
+  material: GOLD_NUGGET
+  name: "&a행운의 반지"
+  lore:
+    - "&7착용자에게 행운을 가져다주는 반지"
+    - ""
+    - "&e[DreamWork 아이템]"
+  stats:
+    luck: 15
+    crit: 3
+
+# ==================== 광부 아이템 ====================
+
+# 드림 스톤 (Dream Stone) - Plan: 타운 건설 핵심 재료
+dream_stone:
+  material: AMETHYST_SHARD
+  name: "&d드림 스톤"
+  lore:
+    - "&7신비한 기운이 느껴지는 돌입니다."
+    - "&7합금 제작이나 타운 건설에 사용됩니다."
+    - ""
+    - "&8[채굴 중 0.1% 확률로 드롭]"
+    - "&e[희귀 재료]"
+  stats:
+    luck: 5
+  custom_model_data: 10001
+
+# 강화된 합금 (Reinforced Alloy) - Plan: 철+금+드림스톤
+reinforced_alloy:
+  material: NETHERITE_INGOT
+  name: "&b강화된 합금"
+  lore:
+    - "&7여러 금속을 융합하여 만든 특수 합금입니다."
+    - "&7건축가 권한 연장 및 장비 수리에 사용됩니다."
+    - ""
+    - "&8[제작: 철 주괴 10 + 금 주괴 5 + 드림스톤 1]"
+    - "&e[제작 재료]"
+  stats:
+    def: 2
+  custom_model_data: 10002
+
+# 미확인 광물 (Unidentified Ore)
+unidentified_ore:
+  material: RAW_IRON
+  name: "&6&l미확인 광물"
+  lore:
+    - "&7정체를 알 수 없는 돌덩이입니다."
+    - "&7감정하면 다양한 아이템이 나올 수 있습니다."
+    - ""
+    - "&e[우클릭] &f감정하기"
+    - ""
+    - "&860% &7자갈/부싯돌 (꽝)"
+    - "&a30% &7철/금/구리 주괴 묶음"
+    - "&b9% &7다이아몬드/에메랄드"
+    - "&51% &7고대 화석"
+  custom_model_data: 10010
+
+# 고대 화석 (Ancient Fossil) - 박물관 기증용
+ancient_fossil:
+  material: BONE
+  name: "&5&l고대 화석"
+  lore:
+    - "&7고대 생물의 화석입니다."
+    - "&7박물관에 기증하면 큰 보상을 받을 수 있습니다."
+    - ""
+    - "&8[초희귀]"
+  custom_model_data: 10020
+
+# 안전모 (Safety Helmet) - Plan: 야간투시 + 낙하물 보호
+safety_helmet:
+  material: IRON_HELMET
+  name: "&6광부의 안전모"
+  lore:
+    - "&7광산 작업에 최적화된 안전모입니다."
+    - ""
+    - "&a[효과]"
+    - "&7- 영구 야간 투시"
+    - "&7- 모래/자갈 낙하 데미지 무효화"
+    - ""
+    - "&e[광부 전용 장비]"
+  stats:
+    con: 5
+  enchants:
+    protection: 2
+  custom_model_data: 10030
+  job_requirement: "miner:10"
+
+# 두더지 드릴 (Mole Drill)
+mole_drill:
+  material: DIAMOND_PICKAXE
+  name: "&c두더지 드릴"
+  lore:
+    - "&7채굴 속도가 매우 빠른 특수 곡괭이입니다."
+    - ""
+    - "&a[특수 능력]"
+    - "&e[우클릭] &f전방 3칸 돌진 채굴 (쿨타임 10초)"
+    - ""
+    - "&c[주의] 내구도가 매우 낮습니다."
+    - "&e[광부 전용 - Lv.30 필요]"
+  stats:
+    str: 10
+  enchants:
+    efficiency: 5
+  custom_model_data: 10031
+  job_requirement: "miner:30"
+  durability: 131  # 매우 낮은 내구도
+
+# 휴대용 승강기 (Escape Rope)
+escape_rope:
+  material: LEAD
+  name: "&e휴대용 승강기"
+  lore:
+    - "&7동굴에서 탈출할 때 사용하는 로프입니다."
+    - ""
+    - "&e[우클릭] &f가장 가까운 지상으로 텔레포트"
+    - "&c(1회용)"
+    - ""
+    - "&e[광부 전용]"
+  custom_model_data: 10032
+
+# 광부의 곡괭이
 miner_pickaxe:
   material: IRON_PICKAXE
   name: "&6광부의 곡괭이"
@@ -32,19 +154,84 @@ miner_pickaxe:
     efficiency: 3
     fortune: 2
 
-# 예시: 행운의 반지
-lucky_ring:
-  material: GOLD_NUGGET
-  name: "&a행운의 반지"
-  lore:
-    - "&7착용자에게 행운을 가져다주는 반지"
-    - ""
-    - "&e[DreamWork 아이템]"
-  stats:
-    luck: 15
-    crit: 3
+# ==================== 농부 아이템 ====================
 
-# 예시: 전사의 투구
+# 황금 씨앗 (Golden Seed)
+golden_seed:
+  material: WHEAT_SEEDS
+  name: "&6황금 씨앗"
+  lore:
+    - "&7심으면 황금 작물이 자랍니다."
+    - "&7수확 시 마법 부여된 아이템이 드롭될 수 있습니다."
+    - ""
+    - "&8[수확 중 0.1% 확률로 드롭]"
+    - "&e[희귀 씨앗]"
+  custom_model_data: 10100
+  glowing: true
+
+# 마법의 비료 (Magic Fertilizer)
+magic_fertilizer:
+  material: BONE_MEAL
+  name: "&5마법의 비료"
+  lore:
+    - "&7마법이 깃든 특별한 비료입니다."
+    - ""
+    - "&e[우클릭] &f작물 즉시 최대 성장 + 3성 등급 확정"
+    - ""
+    - "&8[제작: 뼛가루 9 + 썩은 살점 9 + 에메랄드 1]"
+    - "&e[농부 전용]"
+  custom_model_data: 10101
+  glowing: true
+
+# 풍요의 낫 (Scythe of Harvest)
+scythe:
+  material: DIAMOND_HOE
+  name: "&a풍요의 낫"
+  lore:
+    - "&7범위 수확이 가능한 마법의 낫입니다."
+    - ""
+    - "&a[특수 능력]"
+    - "&e[우클릭] &f3x3 범위 수확 + 자동 재파종"
+    - ""
+    - "&e[농부 전용 - Lv.30 필요]"
+  stats:
+    luck: 10
+  enchants:
+    efficiency: 4
+  custom_model_data: 10102
+  job_requirement: "farmer:30"
+
+# 스프링클러 (Sprinkler)
+sprinkler:
+  material: END_ROD
+  name: "&b스프링클러"
+  lore:
+    - "&7물을 자동으로 뿌려주는 장치입니다."
+    - ""
+    - "&a[효과]"
+    - "&7- 7x7 범위 경작지 자동 관수"
+    - "&7- 작물 성장 속도 2배"
+    - ""
+    - "&8[설치형 아이템]"
+    - "&e[농부 전용 - Lv.40 필요]"
+  custom_model_data: 10103
+  job_requirement: "farmer:40"
+
+# 목동의 피리 (Shepherd's Flute)
+shepherd_flute:
+  material: BLAZE_ROD
+  name: "&e목동의 피리"
+  lore:
+    - "&7동물들을 유인하는 마법의 피리입니다."
+    - ""
+    - "&a[특수 능력]"
+    - "&e[좌클릭] &f주변 20블록 동물 유인"
+    - "&e[우클릭] &f특정 동물 고정 (앉게 함)"
+    - ""
+    - "&e[농부 전용]"
+  custom_model_data: 10104
+
+# 전사의 투구
 warrior_helmet:
   material: IRON_HELMET
   name: "&c전사의 투구"
@@ -59,7 +246,281 @@ warrior_helmet:
   enchants:
     protection: 2
 
-# 예시: 마법사의 로브
+# ==================== 어부 아이템 ====================
+
+# 심해의 상자 (Deep Sea Box)
+deep_sea_box:
+  material: CHEST
+  name: "&3심해의 상자"
+  lore:
+    - "&7바다 밑바닥에서 건져 올린 상자입니다."
+    - ""
+    - "&e[우클릭] &f열어서 보물 획득"
+    - ""
+    - "&8[내용물: 프리즈머린, 바다 랜턴, 삼지창 조각 등]"
+    - "&e[어부 전용]"
+  custom_model_data: 10200
+  glowing: true
+
+# 작살총 (Harpoon Gun)
+harpoon_gun:
+  material: CROSSBOW
+  name: "&9작살총"
+  lore:
+    - "&7물속에서도 정확하게 조준하는 작살총입니다."
+    - ""
+    - "&a[특수 능력]"
+    - "&7- 수중 투사체 속도 감소 없음"
+    - "&7- 적중 시 2초간 속박 또는 끌어당김"
+    - ""
+    - "&e[어부 전용 - Lv.50 필요]"
+  stats:
+    dex: 8
+  enchants:
+    quick_charge: 2
+  custom_model_data: 10201
+  job_requirement: "fisher:50"
+
+# 어군 탐지기 (Sonar Compass)
+sonar_compass:
+  material: COMPASS
+  name: "&bRR어군 탐지기"
+  lore:
+    - "&7희귀 물고기와 난파선을 탐지합니다."
+    - ""
+    - "&a[효과]"
+    - "&7손에 들면 주변 50블록 내의"
+    - "&7희귀 물고기/유적 위치를 표시"
+    - ""
+    - "&e[어부 전용 - Lv.40 필요]"
+  custom_model_data: 10202
+  job_requirement: "fisher:40"
+
+# 커스텀 보트 (Reinforced Boat)
+reinforced_boat:
+  material: OAK_BOAT
+  name: "&6강화된 보트"
+  lore:
+    - "&7일반 보트보다 튼튼한 보트입니다."
+    - ""
+    - "&a[효과]"
+    - "&7- 이동 속도 20% 증가"
+    - "&7- 충돌 파괴 저항"
+    - "&7- 뒤칸에 상자/화로 장착 가능"
+    - ""
+    - "&e[어부 전용]"
+  custom_model_data: 10203
+
+# ==================== 탐험가 아이템 ====================
+
+# 워프 스크롤 (Warp Scroll)
+warp_scroll:
+  material: PAPER
+  name: "&e워프 스크롤"
+  lore:
+    - "&7좌표가 기록된 마법의 양피지입니다."
+    - ""
+    - "&e[우클릭] &f기록된 좌표로 텔레포트"
+    - "&c(1회용)"
+    - ""
+    - "&8[탐험가가 제작하여 판매 가능]"
+    - "&e[탐험가 전용]"
+  custom_model_data: 10300
+
+# 바이옴 캡슐 (Biome Capsule)
+biome_capsule:
+  material: GLASS_BOTTLE
+  name: "&a바이옴 캡슐"
+  lore:
+    - "&7특정 바이옴의 공기가 담긴 병입니다."
+    - ""
+    - "&e[우클릭] &f땅에 뿌려서 바이옴 색상 변경"
+    - ""
+    - "&8[건축가들에게 인기 상품]"
+    - "&e[탐험가 전용 - Lv.40 필요]"
+  custom_model_data: 10301
+  job_requirement: "explorer:40"
+
+# 그래플링 훅 (Grappling Hook)
+grappling_hook:
+  material: FISHING_ROD
+  name: "&6그래플링 훅"
+  lore:
+    - "&7높은 곳을 오르거나 협곡을 건너는 도구입니다."
+    - ""
+    - "&a[특수 능력]"
+    - "&e[우클릭] &f갈고리 발사 후 끌어당김"
+    - "&7최대 거리: 30블록"
+    - "&7쿨타임: 10초"
+    - ""
+    - "&e[탐험가 전용 - Lv.75 필요]"
+  custom_model_data: 10302
+  job_requirement: "explorer:75"
+
+# 이글 아이 망원경 (Eagle Eye)
+eagle_eye:
+  material: SPYGLASS
+  name: "&e이글 아이 망원경"
+  lore:
+    - "&7벽 너머의 대상을 감지하는 망원경입니다."
+    - ""
+    - "&a[효과]"
+    - "&7줌인 상태에서 몬스터/상자에"
+    - "&7발광 효과 적용 (투시)"
+    - ""
+    - "&e[탐험가 전용 - Lv.30 필요]"
+  custom_model_data: 10303
+  job_requirement: "explorer:30"
+
+# 여행자의 텐트 (Portable Tent)
+portable_tent:
+  material: WHITE_BANNER
+  name: "&a여행자의 텐트"
+  lore:
+    - "&7어디서든 안전하게 쉴 수 있는 휴대용 텐트입니다."
+    - ""
+    - "&a[효과]"
+    - "&7- 설치 시 3x3x3 안전 가옥 생성"
+    - "&7- 침대, 엔더 상자 포함"
+    - "&7- 몬스터 진입 차단"
+    - "&7- 회수하여 재사용 가능"
+    - ""
+    - "&e[탐험가 전용 - Lv.60 필요]"
+  custom_model_data: 10304
+  job_requirement: "explorer:60"
+
+# ==================== 사냥꾼 아이템 ====================
+
+# 보스 소환 토템 (Boss Totem)
+boss_totem:
+  material: TOTEM_OF_UNDYING
+  name: "&4보스 소환 토템"
+  lore:
+    - "&7필드 보스를 소환하는 토템입니다."
+    - ""
+    - "&e[우클릭] &f지정된 아레나에서 보스 소환"
+    - ""
+    - "&8[제작: 영혼의 조각 10 + 썩은 살점 뭉치 5 + 다이아몬드 1]"
+    - "&e[사냥꾼 전용]"
+  custom_model_data: 10400
+  glowing: true
+
+# 영혼의 조각 (Soul Fragment)
+soul_fragment:
+  material: GHAST_TEAR
+  name: "&5영혼의 조각"
+  lore:
+    - "&7몬스터의 영혼에서 추출한 조각입니다."
+    - "&7보스 소환 토템 제작에 사용됩니다."
+    - ""
+    - "&8[네더 몬스터에게서 드롭]"
+    - "&e[사냥꾼 전용 재료]"
+  custom_model_data: 10401
+
+# 강화 가죽 (Reinforced Leather)
+reinforced_leather:
+  material: LEATHER
+  name: "&6강화 가죽"
+  lore:
+    - "&7몬스터에게서 얻은 질긴 가죽입니다."
+    - "&7최고급 갑옷의 안감 재료로 사용됩니다."
+    - ""
+    - "&8[좀비/스켈레톤 등에게서 드롭]"
+    - "&e[사냥꾼 전용 재료]"
+  custom_model_data: 10402
+
+# 키틴질 갑각 (Chitin Shell)
+chitin_shell:
+  material: SCUTE
+  name: "&3키틴질 갑각"
+  lore:
+    - "&7거미류에서 얻은 딱딱한 갑각입니다."
+    - "&7특수 방어구 제작에 사용됩니다."
+    - ""
+    - "&8[거미/동굴거미 등에게서 드롭]"
+    - "&e[사냥꾼 전용 재료]"
+  custom_model_data: 10403
+
+# 몬스터 에센스 (Monster Essence)
+monster_essence:
+  material: DRAGON_BREATH
+  name: "&d몬스터 에센스"
+  lore:
+    - "&7몬스터의 생명력이 농축된 에센스입니다."
+    - "&7스탯 영구 강화 엘릭서 제작에 사용됩니다."
+    - ""
+    - "&8[모든 몬스터에게서 낮은 확률 드롭]"
+    - "&e[희귀 재료]"
+  custom_model_data: 10404
+  glowing: true
+
+# 사냥용 덫 (Bear Trap)
+bear_trap:
+  material: IRON_TRAPDOOR
+  name: "&8사냥용 덫"
+  lore:
+    - "&7적을 속박하는 바닥 설치형 덫입니다."
+    - ""
+    - "&a[효과]"
+    - "&7- 밟은 대상 5초간 이동 불가"
+    - "&7- 지속적인 출혈 데미지"
+    - "&7- 사라질 때까지 계속 작동"
+    - ""
+    - "&e[사냥꾼 전용 - Lv.40 필요]"
+  custom_model_data: 10405
+  job_requirement: "hunter:40"
+
+# 길리 슈트 (Ghillie Suit)
+ghillie_suit:
+  material: LEATHER_CHESTPLATE
+  name: "&2길리 슈트"
+  lore:
+    - "&7위장 효과가 있는 특수 갑옷입니다."
+    - ""
+    - "&a[효과]"
+    - "&7웅크리기 시 몬스터 인식 범위 80% 감소"
+    - "&7(선제 공격 가능)"
+    - ""
+    - "&e[사냥꾼 전용 - Lv.50 필요]"
+  color: "4A6B35"  # 위장 녹색
+  custom_model_data: 10406
+  job_requirement: "hunter:50"
+
+# 제압용 목줄 (Taming Leash)
+taming_leash:
+  material: LEAD
+  name: "&c제압용 목줄"
+  lore:
+    - "&7몬스터를 테이밍하는 특수 목줄입니다."
+    - ""
+    - "&e[사용법]"
+    - "&7체력 20% 이하 몬스터에게 사용"
+    - "&7성공 시 펫으로 영입"
+    - ""
+    - "&e[사냥꾼 전용 - Lv.50 필요]"
+  custom_model_data: 10407
+  job_requirement: "hunter:50"
+
+# 단궁 (Shortbow)
+shortbow:
+  material: BOW
+  name: "&7단궁"
+  lore:
+    - "&7사거리는 짧지만 조준 없이 즉시 발사되는 활입니다."
+    - ""
+    - "&a[특수 능력]"
+    - "&7- 클릭 즉시 발사 (당기기 불필요)"
+    - "&7- 사거리 50% 감소"
+    - "&7- 연사 속도 200% 증가"
+    - ""
+    - "&e[사냥꾼 전용 - Lv.30 필요]"
+  stats:
+    dex: 10
+  custom_model_data: 10408
+  job_requirement: "hunter:30"
+
+# ==================== 마법사/기타 아이템 ====================
+
 mage_chestplate:
   material: LEATHER_CHESTPLATE
   name: "&d마법사의 로브"
@@ -71,7 +532,6 @@ mage_chestplate:
     int: 20
     con: 5
 
-# 예시: 암살자의 단검
 assassin_dagger:
   material: GOLDEN_SWORD
   name: "&8암살자의 단검"
@@ -86,26 +546,3 @@ assassin_dagger:
   enchants:
     sharpness: 2
     sweeping: 1
-
-# ==================== 광부 아이템 ====================
-dream_stone:
-  material: AMETHYST_SHARD
-  name: "&d드림 스톤"
-  lore:
-    - "&7신비한 기운이 느껴지는 돌입니다."
-    - "&7합금 제작이나 타운 건설에 사용됩니다."
-    - ""
-    - "&e[희귀 재료]"
-  stats:
-    luck: 5
-
-reinforced_alloy:
-  material: NETHERITE_INGOT
-  name: "&b강화된 합금"
-  lore:
-    - "&7여러 금속을 융합하여 만든 특수 합금입니다."
-    - "&7건축가 권한 연장 및 장비 수리에 사용됩니다."
-    - ""
-    - "&e[제작 재료]"
-  stats:
-    def: 2

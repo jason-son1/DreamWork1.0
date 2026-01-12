@@ -1,60 +1,159 @@
+# ============================================
+# DreamWork - 농부 (Farmer) 직업 설정
+# ============================================
+# 풍요의 공급자 - 식량 공급, 버프 요리 생산, 특수 작물 재배
+
 id: "farmer"
 display_name: "농부"
+description: "풍요의 공급자 - 식량 공급, 버프 요리 생산, 목축"
+icon: "GOLDEN_HOE"
 max_level: 100
 exp_formula: "100 + (level * 20) + (level^2 * 4)"
 
+# ============================================
+# 스탯 보너스 (레벨당)
+# ============================================
+# Plan: 체력 +0.5 하트, 재생력 +0.2%, 행운 +1
+stats_per_level:
+  CON: 0.5    # 체력 - 최대 체력 증가
+  INT: 0.2    # 지능 - 재생력
+  LUCK: 1.0   # 행운 - 추가 드롭, 고등급 작물 확률
+
+# ============================================
+# 경험치 획득처 (Plan 기준 XP/Money 테이블)
+# ============================================
+# | 대상               | 기본 경험치 | 기본 수입 (D) | 비고                 |
+# |--------------------|-------------|---------------|----------------------|
+# | 밀/감자/당근 수확   | 2.0         | 0.5           | 가장 기초적인 활동   |
+# | 호박/수박/사탕수수  | 3.5         | 1.0           | 자동화 농장 효율 고려|
+# | 네더 와트/코러스    | 8.0         | 3.0           | 특수 작물 보너스     |
+# | 동물 번식 (소/양)   | 15.0        | 10.0          | 사료 소모에 대한 보상|
+# | 동물 번식 (말/거북) | 30.0        | 25.0          | 긴 쿨타임 고려       |
+# | 황금 작물           | 100.0       | 150.0         | 수확 시 대박 경험치  |
+
 triggers:
+  # 기본 작물 (밀/감자/당근)
   - type: BLOCK_BREAK
     target: WHEAT
-    amount: 5.0
+    exp: 2.0
+    money: 0.5
   - type: BLOCK_BREAK
     target: CARROTS
-    amount: 5.0
+    exp: 2.0
+    money: 0.5
   - type: BLOCK_BREAK
     target: POTATOES
-    amount: 5.0
+    exp: 2.0
+    money: 0.5
   - type: BLOCK_BREAK
     target: BEETROOTS
-    amount: 6.0
+    exp: 2.0
+    money: 0.5
+
+  # 대형 작물 (호박/수박)
   - type: BLOCK_BREAK
     target: MELON
-    amount: 3.0
+    exp: 3.5
+    money: 1.0
   - type: BLOCK_BREAK
     target: PUMPKIN
-    amount: 3.0
+    exp: 3.5
+    money: 1.0
   - type: BLOCK_BREAK
     target: SUGAR_CANE
-    amount: 2.0
+    exp: 3.5
+    money: 1.0
   - type: BLOCK_BREAK
     target: CACTUS
-    amount: 2.0
+    exp: 3.5
+    money: 1.0
+  - type: BLOCK_BREAK
+    target: BAMBOO
+    exp: 3.5
+    money: 1.0
+
+  # 특수 작물
   - type: BLOCK_BREAK
     target: COCOA
-    amount: 8.0
+    exp: 8.0
+    money: 3.0
   - type: BLOCK_BREAK
     target: NETHER_WART
-    amount: 10.0
+    exp: 8.0
+    money: 3.0
+  - type: BLOCK_BREAK
+    target: CHORUS_FLOWER
+    exp: 8.0
+    money: 3.0
+  - type: BLOCK_BREAK
+    target: SWEET_BERRY_BUSH
+    exp: 4.0
+    money: 1.5
 
+  # 동물 번식
+  - type: BREED
+    target: COW
+    exp: 15.0
+    money: 10.0
+  - type: BREED
+    target: SHEEP
+    exp: 15.0
+    money: 10.0
+  - type: BREED
+    target: PIG
+    exp: 15.0
+    money: 10.0
+  - type: BREED
+    target: CHICKEN
+    exp: 10.0
+    money: 5.0
+  - type: BREED
+    target: RABBIT
+    exp: 12.0
+    money: 8.0
+  - type: BREED
+    target: HORSE
+    exp: 30.0
+    money: 25.0
+  - type: BREED
+    target: DONKEY
+    exp: 25.0
+    money: 20.0
+  - type: BREED
+    target: TURTLE
+    exp: 30.0
+    money: 25.0
+  - type: BREED
+    target: BEE
+    exp: 20.0
+    money: 15.0
+
+# ============================================
+# 레벨업 보상
+# ============================================
 rewards:
   level_10:
-    message: "&a[농부] &f자연의 손길(Passive)을 얻었습니다! (작물 수확 시 내구도 감소 확률 50%)"
+    message: "&a[농부] &f녹색 손길(Passive)을 얻었습니다! (자동 재파종)"
     stats:
       CON: 5
       INT: 2
-    skill_unlock: "nature_touch"
+      LUCK: 3
+    skill_unlock: "green_thumb"
   
   level_30:
-    message: "&a[농부] &f풍년(Active)을 기원합니다! (30초간 작물 수확량 2배)"
+    message: "&a[농부] &f풍년의 춤(Active)을 기원합니다! (30초간 수확량 2배)"
     stats:
       CON: 10
       INT: 5
-    skill_unlock: "bountiful_harvest"
+      LUCK: 5
+    skill_unlock: "dance_of_abundance"
 
   level_50:
     message: "&a[농부] &f비료 뿌리기(Active)를 배웠습니다! (주변 작물 성장 촉진)"
     stats:
       CON: 15
       INT: 8
+      LUCK: 8
     skill_unlock: "fertilizer"
 
   level_80:
@@ -62,29 +161,56 @@ rewards:
     stats:
       CON: 20
       INT: 10
+      LUCK: 10
     money: 100000
-    skill_unlock: "golden_apple_chance"
+    skill_unlock: "golden_harvest"
 
-stats_per_level:
-  CON: 1.0
-  INT: 0.5
-  LUCK: 0.2
+  level_100:
+    message: "&a[농부] &c마스터 농부&f 칭호를 획득했습니다!"
+    stats:
+      CON: 30
+      INT: 15
+      LUCK: 15
+    money: 500000
+    commands:
+      - "lp user %player% parent add master_farmer"
 
+# ============================================
+# 스킬 목록 (Plan 기반)
+# ============================================
 skills:
-  nature_touch:
-    name: "자연의 손길"
+  # [패시브] 녹색 손길 (Green Thumb)
+  green_thumb:
+    name: "녹색 손길"
     type: PASSIVE
     unlock_level: 10
-    description: "괭이/도구 사용 시 50% 확률로 내구도가 감소하지 않습니다."
+    description: "수확과 동시에 자동 재파종 + 주변 5칸 성장 속도 20% 증가"
+    # 레벨별 스케일링
+    scaling:
+      "1-30":
+        replant_chance: 0.50      # 50% 재파종 확률
+        quality_boost: 0          # 1성 작물
+      "31-70":
+        replant_chance: 1.00      # 100% 재파종
+        quality_boost: 1          # 2성 확률 증가
+      "71-100":
+        replant_chance: 1.00
+        quality_boost: 2          # 3성 확률 증가
+        auto_fertilize: true      # 자동 비료 효과
 
-  bountiful_harvest:
-    name: "풍년"
+  # [액티브] 풍년의 춤 (Dance of Abundance)
+  dance_of_abundance:
+    name: "풍년의 춤"
     type: ACTIVE
     unlock_level: 30
-    cooldown: 600
+    cooldown: 600               # 10분 (600초)
     mana_cost: 50
-    description: "30초 동안 농작물 수확 시 2배의 수확물을 얻습니다."
+    description: "주변 15x15 범위 작물 2~3단계 성장 + 가축 번식 가능 상태"
+    range: 15
+    growth_stages: 2
+    enable_breeding: true
 
+  # [액티브] 비료 뿌리기
   fertilizer:
     name: "비료 뿌리기"
     type: ACTIVE
@@ -92,9 +218,75 @@ skills:
     cooldown: 60
     mana_cost: 30
     description: "바라보는 블록 주변 5x5 범위의 작물을 즉시 성장시킵니다."
+    range: 5
+    instant_grow: true
 
-  golden_apple_chance:
-    name: "황금 사과"
+  # [패시브] 황금 수확
+  golden_harvest:
+    name: "황금 수확"
     type: PASSIVE
     unlock_level: 80
-    description: "작물 수확 시 0.1% 확률로 황금 사과가 드롭됩니다."
+    description: "작물 수확 시 0.1% 확률로 황금 씨앗/황금 사과가 드롭됩니다."
+    drop_chance: 0.001
+    possible_drops:
+      - "golden_seed"
+      - "GOLDEN_APPLE"
+
+# ============================================
+# 작물 등급 시스템 (Plan: Crop Quality)
+# ============================================
+crop_quality:
+  enabled: true
+  # 등급별 효과
+  grades:
+    1:  # ★ 일반
+      name: "일반"
+      prefix: "&f"
+      hunger_multiplier: 1.0
+      price_multiplier: 1.0
+    2:  # ★★ 싱싱한
+      name: "싱싱한"
+      prefix: "&a싱싱한 "
+      hunger_multiplier: 1.5
+      price_multiplier: 2.0
+    3:  # ★★★ 황금빛
+      name: "황금빛"
+      prefix: "&6황금빛 "
+      hunger_multiplier: 2.0
+      price_multiplier: 3.0
+      buff_multiplier: 2.0    # 요리 재료 사용 시 버프 효과 2배
+  
+  # 등급 확률 계산 공식
+  # 3성 확률: (level * 0.1)% + (luck * 0.2)%
+  # 2성 확률: 10% + (level * 0.3)% + (luck * 0.5)%
+  probability:
+    three_star:
+      base: 0
+      per_level: 0.001       # 0.1% per level
+      per_luck: 0.002        # 0.2% per luck
+    two_star:
+      base: 0.10             # 기본 10%
+      per_level: 0.003       # 0.3% per level
+      per_luck: 0.005        # 0.5% per luck
+
+# ============================================
+# 특수 드롭 설정
+# ============================================
+special_drops:
+  # 황금 씨앗 (Plan: 0.1% 확률)
+  golden_seed:
+    enabled: true
+    base_chance: 0.001
+    level_bonus: 0.00002
+    trigger_actions:
+      - HARVEST_CROP
+      - BREAK_GRASS
+    description: "심으면 황금 작물이 자라며 마법 부여된 사과/다이아 등 드롭"
+
+  # 마법의 비료
+  magic_fertilizer:
+    recipe:
+      - "BONE_MEAL:9"
+      - "ROTTEN_FLESH:9"
+      - "EMERALD:1"
+    effect: "작물 즉시 최대 성장 + 3성 등급 확정"

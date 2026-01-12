@@ -6,6 +6,8 @@
 general:
   # 디버그 모드 활성화 여부 (상세 로그 출력)
   debug: false
+  # 플러그인 접두사
+  prefix: "&8[&6DreamWork&8] &f"
 
 # 메시지 설정
 messages:
@@ -14,33 +16,28 @@ messages:
   reload-success: "&a설정이 리로드되었습니다."
   unknown-command: "&c알 수 없는 명령어입니다."
 
+# ================================================================
 # 직업 시스템 설정
+# ================================================================
 jobs:
   # 경험치 획득 배율 (이벤트 등에서 사용)
   exp-multiplier: 1.0
+  # 돈 획득 배율
+  money-multiplier: 1.0
+  # 레벨업 경험치 공식
+  # 사용 가능한 변수: level
+  # 기본값: 100 + (level * 25) + (level^2 * 5)
+  exp-formula: "100 + (level * 25) + (level^2 * 5)"
+  # 최대 레벨
+  max-level: 100
+  # 오늘의 직업 시스템 (Plan: 1.5배 보너스)
+  daily-job:
+    enabled: true
+    multiplier: 1.5
 
-# 레벨업 경험치 공식
-# 사용 가능한 변수: level
-# 기본값: 100 + (level * 25) + (level^2 * 5)
-exp-formula: "100 + (level * 25) + (level^2 * 5)"
-
-# 데이터 자동 저장 주기 (틱 단위)
-# 20틱 = 1초, 1200틱 = 1분, 6000틱 = 5분
-auto-save-interval: 6000
-
-# 전투 시스템 설정
-combat:
-  # STR 스탯 1당 추가 데미지 배율
-  strength-multiplier: 0.5
-
-# 상호작용 시스템 설정
-interaction:
-  # DEX 스탯 1당 더블 드롭 확률 (0.002 = 0.2%)
-  dex-multiplier: 0.002
-  # LUCK 스탯 1당 희귀 드롭 확률 (0.001 = 0.1%)
-  luck-multiplier: 0.001
-
+# ================================================================
 # 스탯 시스템 설정
+# ================================================================
 stats:
   # 레벨업 시 획득 스탯 포인트
   points-per-level: 3
@@ -48,19 +45,120 @@ stats:
   speed-per-dex: 0.0005
   # 최대 체력 증가량 (CON 1당)
   health-per-con: 2
+  # 힘(STR) 1당 추가 데미지 배율
+  strength-multiplier: 0.005   # 0.5% per point
+  # 크리티컬 확률 (LUCK 1당)
+  crit-chance-per-luck: 0.001  # 0.1% per point
 
+# ================================================================
+# 상호작용 시스템 설정
+# ================================================================
+interaction:
+  # DEX 스탯 1당 더블 드롭 확률 (0.002 = 0.2%)
+  dex-multiplier: 0.002
+  # LUCK 스탯 1당 희귀 드롭 확률 (0.001 = 0.1%)
+  luck-multiplier: 0.001
+
+# ================================================================
+# 시스템별 활성화 및 설정
+# ================================================================
+systems:
+  # 광부 - 채굴 콤보 시스템
+  mining-combo:
+    enabled: true
+    timeout-ms: 5000           # 5초 타임아웃
+    max-combo: 100
+    # 콤보 보너스
+    bonuses:
+      30:
+        speed: 0.10            # 이동속도 +10%
+      50:
+        rare-drop: 1.5         # 희귀 드롭 1.5배
+      100:
+        exp: 2.0               # 경험치 2배
+  
+  # 광부 - 미확인 광물 시스템
+  unidentified-ore:
+    enabled: true
+    drop-chance: 0.001         # 0.1%
+    level-bonus: 0.0001        # 레벨당 +0.01%
+    # 감정 결과 확률
+    appraisal:
+      junk: 0.60               # 60% 꽝
+      ingots: 0.30             # 30% 주괴
+      gems: 0.09               # 9% 다이아/에메랄드
+      fossil: 0.01             # 1% 고대 화석
+
+  # 농부 - 작물 등급 시스템
+  crop-quality:
+    enabled: true
+    # 3성 확률: base + (level * per_level) + (luck * per_luck)
+    three-star:
+      base-chance: 0.0
+      per-level: 0.001         # 0.1% per level
+      per-luck: 0.002          # 0.2% per luck
+    two-star:
+      base-chance: 0.10        # 기본 10%
+      per-level: 0.003         # 0.3% per level
+      per-luck: 0.005          # 0.5% per luck
+  
+  # 어부 - 물고기 계측 시스템
+  fish-measurement:
+    enabled: true
+    crown-threshold: 0.95      # 상위 5%가 월척
+    crown-price-multiplier: 3.0
+    crown-can-mount: true
+
+  # 어부 - 바이옴별 낚시
+  biome-fishing:
+    enabled: true
+    # 상세 설정은 jobs/fisher.yml 참조
+  
+  # 사냥꾼 - 몹 티어 시스템
+  mob-tier:
+    enabled: true
+    alpha-spawn-chance: 0.01   # 1% 확률로 알파 스폰
+    alpha-health-multiplier: 5.0
+    alpha-damage-multiplier: 2.0
+    alpha-exp-multiplier: 10.0
+  
+  # 사냥꾼 - 슬레이어 도감
+  slayer-knowledge:
+    enabled: true
+    # 상세 설정은 jobs/hunter.yml 참조
+  
+  # 사냥꾼 - 블러드 문
+  blood-moon:
+    enabled: true
+    cycle-days: 7              # 7일 주기
+    spawn-multiplier: 3.0
+    exp-multiplier: 2.0
+  
+  # 탐험가 - 아틀라스 기록
+  atlas-discovery:
+    enabled: true
+    first-finder-bonus: 3.0    # 최초 발견 3배 보상
+    announce-first-finder: true
+
+  # 탐험가 - 배달 퀘스트
+  delivery-quest:
+    enabled: true
+    # 상세 설정은 jobs/explorer.yml 참조
+
+# ================================================================
 # 퀘스트 시스템 설정
+# ================================================================
 quests:
   # 일일 퀘스트 활성화 개수
   daily-quest-count: 3
-  # 일일 퀘스트 재설정 시간 (서버 시간 기준 0시)
+  # 일일 퀘스트 재설정 시간 (서버 시간 기준)
   reset-hour: 0
 
+# ================================================================
 # 데이터베이스 설정
+# ================================================================
 database:
   # 데이터 저장 방식 선택 (SQLITE 또는 MYSQL)
-  # SQLITE: 플러그인 폴더 내 파일에 저장 (소규모 서버/테스트용)
-  # MYSQL: 외부 MySQL 데이터베이스에 저장 (대규모 서버/네트워크용)
   type: "SQLITE"
   
   # MYSQL 사용 시 설정
@@ -70,6 +168,33 @@ database:
   username: "root"
   password: ""
   
-  # 커넥션 풀 설정 (고급 사용자용)
+  # 커넥션 풀 설정
   pool-size: 10
   connection-timeout: 30000
+
+# 데이터 자동 저장 주기 (틱 단위)
+# 20틱 = 1초, 6000틱 = 5분
+auto-save-interval: 6000
+
+# ================================================================
+# 경제 설정 (Vault 연동)
+# ================================================================
+economy:
+  # 화폐 단위
+  currency-name: "D"
+  currency-name-plural: "D"
+  # 시작 잔액
+  starting-balance: 1000
+  # 최대 잔액 (0 = 무제한)
+  max-balance: 0
+
+# ================================================================
+# 타운 설정 (Towny 연동)
+# ================================================================
+town:
+  # 타운 은행 시스템
+  bank:
+    enabled: true
+    tax-rate: 0.05             # 5% 세금
+  # 직업 길드 건물 보너스
+  guild-building-bonus: true

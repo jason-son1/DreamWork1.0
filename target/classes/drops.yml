@@ -1,57 +1,207 @@
 # ================================================================
 # DreamWork Core 커스텀 드롭 설정
 # ================================================================
-# 직업별 블록 드롭 확률 및 아이템 설정
+# 직업별 블록/액션 드롭 확률 및 아이템 설정
 # 
 # 구조:
 # <직업ID>:
-#   <블록타입>:
+#   <블록타입 또는 액션>:
 #     base: 0.05          # 기본 확률 (5%)
 #     per-level: 0.001    # 레벨당 추가 확률 (+0.1%)
 #     item: "item_id"     # 드롭할 아이템 ID (items.yml 참조)
 
+# ================================================================
+# 광부 (Miner) 드롭
+# ================================================================
 miner:
-  COAL_ORE:
-    base: 0.05
-    per-level: 0.001
-    item: "starter_sword"
-  IRON_ORE:
-    base: 0.03
-    per-level: 0.001
-    item: "miner_pickaxe"
-  GOLD_ORE:
-    base: 0.02
-    per-level: 0.001
-    item: "lucky_ring"
-  DIAMOND_ORE:
-    base: 0.01
-    per-level: 0.0005
-    item: "warrior_helmet"
+  # 드림 스톤 (0.1% 확률, Plan 기준)
   STONE:
-    base: 0.01
-    per-level: 0.0005
-    item: null
+    base: 0.001
+    per-level: 0.00001
+    item: "dream_stone"
   DEEPSLATE:
+    base: 0.001
+    per-level: 0.00001
+    item: "dream_stone"
+  
+  # 광물에서 미확인 광물 드롭
+  COAL_ORE:
+    base: 0.001
+    per-level: 0.0001
+    item: "unidentified_ore"
+  DEEPSLATE_COAL_ORE:
+    base: 0.001
+    per-level: 0.0001
+    item: "unidentified_ore"
+  IRON_ORE:
+    base: 0.001
+    per-level: 0.0001
+    item: "unidentified_ore"
+  DEEPSLATE_IRON_ORE:
+    base: 0.001
+    per-level: 0.0001
+    item: "unidentified_ore"
+  COPPER_ORE:
+    base: 0.001
+    per-level: 0.0001
+    item: "unidentified_ore"
+  DEEPSLATE_COPPER_ORE:
+    base: 0.001
+    per-level: 0.0001
+    item: "unidentified_ore"
+  GOLD_ORE:
+    base: 0.002
+    per-level: 0.0001
+    item: "unidentified_ore"
+  DEEPSLATE_GOLD_ORE:
+    base: 0.002
+    per-level: 0.0001
+    item: "unidentified_ore"
+  
+  # 다이아/에메랄드에서 더 높은 확률
+  DIAMOND_ORE:
+    base: 0.005
+    per-level: 0.0002
+    item: "unidentified_ore"
+  DEEPSLATE_DIAMOND_ORE:
+    base: 0.005
+    per-level: 0.0002
+    item: "unidentified_ore"
+  EMERALD_ORE:
+    base: 0.005
+    per-level: 0.0002
+    item: "unidentified_ore"
+  DEEPSLATE_EMERALD_ORE:
+    base: 0.005
+    per-level: 0.0002
+    item: "unidentified_ore"
+  
+  # 고대 잔해 - 가장 높은 확률
+  ANCIENT_DEBRIS:
     base: 0.01
     per-level: 0.0005
-    item: null
+    item: "unidentified_ore"
 
+# ================================================================
+# 농부 (Farmer) 드롭
+# ================================================================
 farmer:
+  # 황금 씨앗 (0.1% 확률)
   WHEAT:
+    base: 0.001
+    per-level: 0.00002
+    item: "golden_seed"
+  CARROTS:
+    base: 0.001
+    per-level: 0.00002
+    item: "golden_seed"
+  POTATOES:
+    base: 0.001
+    per-level: 0.00002
+    item: "golden_seed"
+  BEETROOTS:
+    base: 0.001
+    per-level: 0.00002
+    item: "golden_seed"
+  
+  # 호박/수박에서 약간 높은 확률
+  MELON:
+    base: 0.002
+    per-level: 0.00003
+    item: "golden_seed"
+  PUMPKIN:
+    base: 0.002
+    per-level: 0.00003
+    item: "golden_seed"
+
+  # 잔디 제거 시 황금 씨앗
+  GRASS:
+    base: 0.0005
+    per-level: 0.00001
+    item: "golden_seed"
+  TALL_GRASS:
+    base: 0.0005
+    per-level: 0.00001
+    item: "golden_seed"
+
+# ================================================================
+# 어부 (Fisher) 드롭
+# ================================================================
+# 낚시는 FishMeasurementSystem에서 별도 처리
+fisher:
+  # 특수 드롭은 job config에서 설정
+
+# ================================================================
+# 사냥꾼 (Hunter) 드롭
+# ================================================================
+hunter:
+  # 강화 가죽 - 좀비/스켈레톤 등
+  ZOMBIE:
     base: 0.05
     per-level: 0.001
-    item: null
-  CARROTS:
-    base: 0.04
+    item: "reinforced_leather"
+  SKELETON:
+    base: 0.05
     per-level: 0.001
-    item: null
-  POTATOES:
-    base: 0.04
+    item: "reinforced_leather"
+  DROWNED:
+    base: 0.06
     per-level: 0.001
-    item: null
+    item: "reinforced_leather"
+  HUSK:
+    base: 0.06
+    per-level: 0.001
+    item: "reinforced_leather"
+  STRAY:
+    base: 0.06
+    per-level: 0.001
+    item: "reinforced_leather"
+  
+  # 키틴질 갑각 - 거미류
+  SPIDER:
+    base: 0.08
+    per-level: 0.001
+    item: "chitin_shell"
+  CAVE_SPIDER:
+    base: 0.10
+    per-level: 0.0015
+    item: "chitin_shell"
+  SILVERFISH:
+    base: 0.08
+    per-level: 0.001
+    item: "chitin_shell"
+  ENDERMITE:
+    base: 0.15
+    per-level: 0.002
+    item: "chitin_shell"
+  
+  # 몬스터 에센스 - 모든 몬스터
+  ALL_MONSTERS:
+    base: 0.02
+    per-level: 0.0002
+    item: "monster_essence"
+  
+  # 영혼의 조각 - 네더 몬스터
+  WITHER_SKELETON:
+    base: 0.01
+    per-level: 0.0003
+    item: "soul_fragment"
+  GHAST:
+    base: 0.02
+    per-level: 0.0003
+    item: "soul_fragment"
+  BLAZE:
+    base: 0.01
+    per-level: 0.0002
+    item: "soul_fragment"
+  ENDERMAN:
+    base: 0.01
+    per-level: 0.0002
+    item: "soul_fragment"
 
-fisher:
-  # 낚시는 별도 이벤트로 처리
-
-hunter:
-  # 몬스터 드롭은 별도 시스템
+# ================================================================
+# 탐험가 (Explorer) 드롭
+# ================================================================
+# 탐험가는 블록 드롭보다 발견/배달 보상 위주
+explorer:
+  # 특수 드롭은 job config에서 설정
