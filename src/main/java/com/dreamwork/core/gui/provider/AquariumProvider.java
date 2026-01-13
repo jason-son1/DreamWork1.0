@@ -13,6 +13,8 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
+import java.io.File;
+import org.bukkit.configuration.file.YamlConfiguration;
 import java.util.*;
 
 /**
@@ -30,16 +32,57 @@ public class AquariumProvider extends InventoryProvider {
     /** 납품 가능한 물고기 및 보상 */
     private static final Map<Material, FishDeliveryInfo> FISH_REWARDS = new LinkedHashMap<>();
 
+    // 보너스 설정 (Static Cache)
+    private static double BONUS_LIVE_FISH = 2.0;
+    private static double BONUS_BIG_FISH = 3.0;
+    private static double BONUS_LEVEL_PERCENT = 1.0;
+
     static {
-        FISH_REWARDS.put(Material.COD, new FishDeliveryInfo("대구", 10, 5.0));
-        FISH_REWARDS.put(Material.SALMON, new FishDeliveryInfo("연어", 25, 15.0));
-        FISH_REWARDS.put(Material.TROPICAL_FISH, new FishDeliveryInfo("열대어", 50, 30.0));
-        FISH_REWARDS.put(Material.PUFFERFISH, new FishDeliveryInfo("복어", 40, 25.0));
+        // 실제 로드는 loadConfig()에서 수행
+    }
+
+    public static void loadConfig(DreamWorkCore plugin) {
+        FISH_REWARDS.clear();
+
+        File file = new File(plugin.getDataFolder(), "facilities/aquarium.yml");
+        if (!file.exists()) {
+            plugin.getLogger().warning("aquarium.yml 파일을 찾을 수 없습니다.");
+            return;
+        }
+
+        YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
+
+        if (config.contains("delivery")) {
+            for (String key : config.getConfigurationSection("delivery").getKeys(false)) {
+                try {
+                    String path = "delivery." + key;
+                    Material mat = Material.matchMaterial(key);
+                    if (mat == null)
+                        continue;
+
+                    String displayName = config.getString(path + ".display_name");
+                    int reward = config.getInt(path + ".reward_money");
+                    double exp = config.getDouble(path + ".reward_exp");
+
+                    FISH_REWARDS.put(mat, new FishDeliveryInfo(displayName, reward, exp));
+                } catch (Exception e) {
+                    plugin.getLogger().warning("수족관 납품 데이터 로드 실패: " + key);
+                }
+            }
+        }
+
+        BONUS_LIVE_FISH = config.getDouble("bonuses.live_fish_multiplier", 2.0);
+        BONUS_BIG_FISH = config.getDouble("bonuses.big_fish_multiplier", 3.0);
+        BONUS_LEVEL_PERCENT = config.getDouble("bonuses.level_bonus_percent", 1.0);
     }
 
     public AquariumProvider(Player player, DreamWorkCore plugin) {
         super(player);
         this.plugin = plugin;
+
+        if (FISH_REWARDS.isEmpty()) {
+            loadConfig(plugin);
+        }
     }
 
     @Override
@@ -72,8 +115,8 @@ public class AquariumProvider extends InventoryProvider {
                 .lore("")
                 .lore("§7물고기를 납품하여 보상을 받으세요!")
                 .lore("")
-                .lore("§a살아있는 물고기: §f2배 보상")
-                .lore("§6월척: §f3배 보상")
+                .lore("§a살아있는 물고기: §f" + BONUS_LIVE_FISH + "배 보상")
+                .lore("§6월척: §f" + BONUS_BIG_FISH + "배 보상")
                 .lore("")
                 .lore("§8어부 레벨이 높을수록 보너스!")
                 .build();
@@ -135,7 +178,7 @@ public class AquariumProvider extends InventoryProvider {
 
         // 어부 레벨 보너스
         int fisherLevel = getFisherLevel();
-        double levelBonus = 1.0 + (fisherLevel * 0.01); // 레벨당 1% 보너스
+        double levelBonus = 1.0 + (fisherLevel * (BONUS_LEVEL_PERCENT / 100.0));
         totalReward = (int) (totalReward * levelBonus);
         totalExp = totalExp * levelBonus;
 
@@ -197,7 +240,7 @@ public class AquariumProvider extends InventoryProvider {
 
         // 어부 레벨 보너스
         int fisherLevel = getFisherLevel();
-        double levelBonus = 1.0 + (fisherLevel * 0.01);
+        double levelBonus = 1.0 + (fisherLevel * (BONUS_LEVEL_PERCENT / 100.0));
         totalReward = (int) (totalReward * levelBonus);
 
         // 보상 지급 (경제 시스템 연동)
@@ -288,7 +331,7 @@ public class AquariumProvider extends InventoryProvider {
 
         // 레벨 보너스
         int fisherLevel = getFisherLevel();
-        double levelBonus = 1.0 + (fisherLevel * 0.01);
+        double levelBonus = 1.0 + (fisherLevel * (BONUS_LEVEL_PERCENT / 100.0));
         totalReward = (int) (totalReward * levelBonus);
 
         player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1f);

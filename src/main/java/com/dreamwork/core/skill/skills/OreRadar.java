@@ -60,7 +60,7 @@ public class OreRadar implements SkillEffect {
 
         // 이펙트
         player.getWorld().spawnParticle(
-                Particle.ENCHANTMENT_TABLE,
+                Particle.ENCHANT,
                 player.getLocation().add(0, 1, 0),
                 50, 2, 1, 2, 0.1);
         player.playSound(player.getLocation(), Sound.BLOCK_AMETHYST_BLOCK_CHIME, 1.0f, 1.2f);

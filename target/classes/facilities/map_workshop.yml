@@ -1,0 +1,59 @@
+# ============================================
+# 지도 제작소 설정 (Map Workshop)
+# ============================================
+
+# 바이옴 캡슐 판매 목록
+biome_capsules:
+  PLAINS:
+    name: "평원 캡슐"
+    material: "LIME_DYE"
+    price: 100
+    level_required: 10
+    
+  FOREST:
+    name: "숲 캡슐"
+    material: "GREEN_DYE"
+    price: 150
+    level_required: 20
+    
+  DESERT:
+    name: "사막 캡슐"
+    material: "YELLOW_DYE"
+    price: 200
+    level_required: 25
+    
+  JUNGLE:
+    name: "정글 캡슐"
+    material: "ORANGE_DYE"
+    price: 300
+    level_required: 30
+    
+  BADLANDS:
+    name: "메사 캡슐"
+    material: "RED_DYE"
+    price: 500
+    level_required: 40
+    
+  MUSHROOM_FIELDS:
+    name: "버섯섬 캡슐"
+    material: "PURPLE_DYE"
+    price: 1000
+    level_required: 50
+
+# 탐험 보고서 보상
+reports:
+  VILLAGE:
+    name: "마을"
+    reward: 50
+    
+  DUNGEON:
+    name: "던전"
+    reward: 100
+    
+  NETHER_FORTRESS:
+    name: "네더 요새"
+    reward: 200
+    
+  END_CITY:
+    name: "엔드 시티"
+    reward: 500

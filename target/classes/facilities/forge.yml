@@ -1,0 +1,76 @@
+# ============================================
+# 대장간 설정 (The Forge)
+# ============================================
+
+# 합금 제작 레시피
+alloys:
+  reinforced_steel:
+    display_name: "&a강화된 강철"
+    result_material: "IRON_INGOT"
+    custom_model_data: 10030
+    lore:
+      - "&7건축가의 보호 구역 설정에 사용됩니다."
+    ingredients:
+      - "IRON_INGOT:10"
+      - "COPPER_INGOT:10"
+      - "GOLD_INGOT:5"
+    level_required: 30
+
+  dreamwork_alloy:
+    display_name: "&5드림워크 합금"
+    result_material: "NETHERITE_INGOT"
+    custom_model_data: 10031
+    lore:
+      - "&7전설 곡괭이 제작에 필요합니다."
+    ingredients:
+      - "IRON_INGOT:20"
+      - "GOLD_INGOT:10"
+      - "NETHERITE_SCRAP:2"
+      - "DREAM_STONE:1" # 커스텀 아이템 ID
+    level_required: 50
+
+# 광물 감정 설정
+files:
+  identification:
+    cost: 100 # 감정 비용 (Dream)
+    level_bonus_per_tier: 0.005 # 레벨당 상위 티어 확률 증가량 (0.5%)
+    
+    # 확률 테이블 (낮은 확률부터 체크)
+    chances:
+      ancient_fossil:
+        chance: 0.05
+        name: "&5고대 화석"
+        material: "BONE"
+        custom_model_data: 10020
+        min_amount: 1
+        max_amount: 1
+        broadcast: true
+        
+      netherite_scrap:
+        chance: 0.15 # 누적 확률 (0.05 + 0.10)
+        name: "&4네더라이트 파편"
+        material: "NETHERITE_SCRAP"
+        min_amount: 1
+        max_amount: 2
+        
+      rare_gem:
+        chance: 0.30 # 누적 확률 (0.15 + 0.15)
+        name_diamond: "&b다이아몬드"
+        name_emerald: "&a에메랄드"
+        min_amount: 1
+        max_amount: 3
+        
+      metal_ingot:
+        chance: 0.55 # 누적 확률 (0.30 + 0.25)
+        name_iron: "&f철 주괴"
+        name_gold: "&6금 주괴"
+        name_copper: "&c구리 주괴"
+        min_amount: 3
+        max_amount: 8
+        
+      # 나머지는 꽝 (자갈/부싯돌)
+
+# 수리 설정
+repair:
+  base_cost: 500
+  level_required: 30

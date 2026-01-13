@@ -2,15 +2,13 @@ package com.dreamwork.core.mission;
 
 import com.dreamwork.core.DreamWorkCore;
 import com.dreamwork.core.job.JobManager;
+import com.dreamwork.core.job.JobType;
 import com.dreamwork.core.job.UserJobData;
 import com.dreamwork.core.manager.Manager;
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -164,7 +162,10 @@ public class MissionManager extends Manager {
         // 보상 지급 (경험치/돈)
         JobManager jobManager = plugin.getJobManager();
         if (jobManager != null) {
-            jobManager.addExperience(uuid, mission.goalAmount * 0.5);
+            JobType jobType = JobType.fromConfigKey(mission.jobId);
+            if (jobType != null) {
+                jobManager.addExp(player, jobType, mission.goalAmount * 0.5);
+            }
         }
 
         // 효과

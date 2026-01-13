@@ -15,6 +15,8 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
+import java.io.File;
+import org.bukkit.configuration.file.YamlConfiguration;
 import java.util.*;
 
 /**
@@ -39,58 +41,89 @@ public class RestaurantProvider extends InventoryProvider {
     private static final List<Recipe> BREWING_RECIPES = new ArrayList<>();
 
     static {
-        // 요리 레시피
-        COOKING_RECIPES.add(new Recipe(
-                "hearty_stew", "§a든든한 스튜",
-                Arrays.asList("CARROT:3", "POTATO:3", "COOKED_BEEF:1"),
-                Arrays.asList(
-                        new EffectData(PotionEffectType.STRENGTH, 1, 180),
-                        new EffectData(PotionEffectType.SATURATION, 0, 60)),
-                30));
+        // 레시피 로드는 loadRecipes() 메서드에서 처리
+    }
 
-        COOKING_RECIPES.add(new Recipe(
-                "golden_feast", "§6황금빛 만찬",
-                Arrays.asList("WHEAT:5", "GOLDEN_CARROT:2", "HONEY_BOTTLE:1"),
-                Arrays.asList(
-                        new EffectData(PotionEffectType.REGENERATION, 1, 300),
-                        new EffectData(PotionEffectType.ABSORPTION, 1, 300)),
-                50));
+    /**
+     * 레시피를 설정 파일에서 로드합니다.
+     */
+    public static void loadRecipes(DreamWorkCore plugin) {
+        COOKING_RECIPES.clear();
+        BREWING_RECIPES.clear();
 
-        COOKING_RECIPES.add(new Recipe(
-                "seafood_platter", "§b해산물 모둠",
-                Arrays.asList("COD:2", "SALMON:2", "TROPICAL_FISH:1"),
-                Arrays.asList(
-                        new EffectData(PotionEffectType.WATER_BREATHING, 0, 600),
-                        new EffectData(PotionEffectType.DOLPHINS_GRACE, 0, 300)),
-                40));
+        File file = new File(plugin.getDataFolder(), "facilities/restaurant.yml");
+        if (!file.exists()) {
+            plugin.getLogger().warning("restaurant.yml 파일을 찾을 수 없습니다.");
+            return;
+        }
 
-        // 양조 레시피
-        BREWING_RECIPES.add(new Recipe(
-                "strength_tonic", "§c힘의 강장제",
-                Arrays.asList("NETHER_WART:1", "BLAZE_POWDER:1", "SUGAR:2"),
-                Arrays.asList(
-                        new EffectData(PotionEffectType.STRENGTH, 1, 180)),
-                30));
+        YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
 
-        BREWING_RECIPES.add(new Recipe(
-                "swiftness_elixir", "§e신속의 비약",
-                Arrays.asList("NETHER_WART:1", "SUGAR:3", "RABBIT_FOOT:1"),
-                Arrays.asList(
-                        new EffectData(PotionEffectType.SPEED, 1, 240)),
-                30));
+        // 요리 레시피 로드
+        if (config.contains("cooking")) {
+            for (String key : config.getConfigurationSection("cooking").getKeys(false)) {
+                try {
+                    String path = "cooking." + key;
+                    String displayName = config.getString(path + ".display_name");
+                    List<String> ingredients = config.getStringList(path + ".ingredients");
+                    List<String> effectsStr = config.getStringList(path + ".effects");
+                    int levelRequired = config.getInt(path + ".level_required", 0);
 
-        BREWING_RECIPES.add(new Recipe(
-                "miners_brew", "§7광부의 술",
-                Arrays.asList("COAL:2", "IRON_INGOT:1", "GLOWSTONE_DUST:1"),
-                Arrays.asList(
-                        new EffectData(PotionEffectType.HASTE, 1, 300),
-                        new EffectData(PotionEffectType.NIGHT_VISION, 0, 300)),
-                40));
+                    List<EffectData> effects = parseEffects(effectsStr);
+                    COOKING_RECIPES.add(new Recipe(key, displayName, ingredients, effects, levelRequired));
+                } catch (Exception e) {
+                    plugin.getLogger().warning("요리 레시피 로드 실패: " + key);
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        // 양조 레시피 로드
+        if (config.contains("brewing")) {
+            for (String key : config.getConfigurationSection("brewing").getKeys(false)) {
+                try {
+                    String path = "brewing." + key;
+                    String displayName = config.getString(path + ".display_name");
+                    List<String> ingredients = config.getStringList(path + ".ingredients");
+                    List<String> effectsStr = config.getStringList(path + ".effects");
+                    int levelRequired = config.getInt(path + ".level_required", 0);
+
+                    List<EffectData> effects = parseEffects(effectsStr);
+                    BREWING_RECIPES.add(new Recipe(key, displayName, ingredients, effects, levelRequired));
+                } catch (Exception e) {
+                    plugin.getLogger().warning("양조 레시피 로드 실패: " + key);
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    private static List<EffectData> parseEffects(List<String> effectsStr) {
+        List<EffectData> effects = new ArrayList<>();
+        for (String str : effectsStr) {
+            try {
+                String[] parts = str.split(":");
+                PotionEffectType type = PotionEffectType
+                        .getByKey(org.bukkit.NamespacedKey.minecraft(parts[0].toLowerCase()));
+                int amplifier = Integer.parseInt(parts[1]);
+                int duration = Integer.parseInt(parts[2]);
+                if (type != null) {
+                    effects.add(new EffectData(type, amplifier, duration));
+                }
+            } catch (Exception e) {
+                // 파싱 실패 무시
+            }
+        }
+        return effects;
     }
 
     public RestaurantProvider(Player player, DreamWorkCore plugin) {
         super(player);
         this.plugin = plugin;
+
+        if (COOKING_RECIPES.isEmpty() && BREWING_RECIPES.isEmpty()) {
+            loadRecipes(plugin);
+        }
     }
 
     @Override

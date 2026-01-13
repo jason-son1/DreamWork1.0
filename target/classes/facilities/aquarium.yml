@@ -1,0 +1,31 @@
+# ============================================
+# 아쿠아리움 설정 (Aquarium)
+# ============================================
+
+# 물고기 납품 단가
+delivery:
+  COD:
+    display_name: "대구"
+    reward_money: 10
+    reward_exp: 5.0
+    
+  SALMON:
+    display_name: "연어"
+    reward_money: 25
+    reward_exp: 15.0
+    
+  TROPICAL_FISH:
+    display_name: "열대어"
+    reward_money: 50
+    reward_exp: 30.0
+    
+  PUFFERFISH:
+    display_name: "복어"
+    reward_money: 40
+    reward_exp: 25.0
+
+# 보너스 설정
+bonuses:
+  live_fish_multiplier: 2.0  # 살아있는 물고기 (PDC) 보너스
+  big_fish_multiplier: 3.0   # 월척 보너스
+  level_bonus_percent: 1.0   # 레벨당 보너스 % (예: 1.0 = 1%)

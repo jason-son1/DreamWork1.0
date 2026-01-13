@@ -17,6 +17,8 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 
+import java.io.File;
+import org.bukkit.configuration.file.YamlConfiguration;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -37,18 +39,69 @@ public class MapWorkshopProvider extends InventoryProvider {
     /** 현재 모드 (0: 좌표 스크롤, 1: 바이옴 캡슐, 2: 탐험 보고서) */
     private int currentMode = 0;
 
-    /** 거래 게시판 - 좌표 스크롤 목록 (임시 저장소) */
+    // 거래 게시판 - 좌표 스크롤 목록 (임시 저장소)
     private static final Map<UUID, List<CoordinateScrollListing>> SCROLL_LISTINGS = new ConcurrentHashMap<>();
+
+    // 설정 데이터 (Static Cache)
+    private static final List<BiomeCapsuleInfo> BIOME_CAPSULE_LIST = new ArrayList<>();
+    private static final Map<String, Integer> REPORT_REWARDS = new LinkedHashMap<>();
 
     // PDC 키
     private final NamespacedKey scrollKey;
     private final NamespacedKey biomeCapKey;
+
+    static {
+        // 실제 로드는 loadConfig()에서 수행
+    }
+
+    public static void loadConfig(DreamWorkCore plugin) {
+        BIOME_CAPSULE_LIST.clear();
+        REPORT_REWARDS.clear();
+
+        File file = new File(plugin.getDataFolder(), "facilities/map_workshop.yml");
+        if (!file.exists()) {
+            plugin.getLogger().warning("map_workshop.yml 파일을 찾을 수 없습니다.");
+            return;
+        }
+
+        YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
+
+        // 1. 바이옴 캡슐 로드
+        if (config.contains("biome_capsules")) {
+            for (String key : config.getConfigurationSection("biome_capsules").getKeys(false)) {
+                try {
+                    String path = "biome_capsules." + key;
+                    String displayName = config.getString(path + ".display_name");
+                    Material material = Material.matchMaterial(config.getString(path + ".material", "PAPER"));
+                    int price = config.getInt(path + ".price");
+                    int levelReq = config.getInt(path + ".level_required");
+                    String biomeId = config.getString(path + ".biome_id", key.toUpperCase());
+
+                    BIOME_CAPSULE_LIST.add(new BiomeCapsuleInfo(displayName, material, price, levelReq, biomeId));
+                } catch (Exception e) {
+                    plugin.getLogger().warning("바이옴 캡슐 로드 실패: " + key);
+                }
+            }
+        }
+
+        // 2. 보고서 보상 로드
+        if (config.contains("reports.rewards")) {
+            for (String key : config.getConfigurationSection("reports.rewards").getKeys(false)) {
+                int reward = config.getInt("reports.rewards." + key);
+                REPORT_REWARDS.put(key, reward);
+            }
+        }
+    }
 
     public MapWorkshopProvider(Player player, DreamWorkCore plugin) {
         super(player);
         this.plugin = plugin;
         this.scrollKey = new NamespacedKey(plugin, "coord_scroll");
         this.biomeCapKey = new NamespacedKey(plugin, "biome_capsule");
+
+        if (BIOME_CAPSULE_LIST.isEmpty()) {
+            loadConfig(plugin);
+        }
     }
 
     @Override
@@ -173,34 +226,21 @@ public class MapWorkshopProvider extends InventoryProvider {
     private void renderBiomeCapsuleContent(Inventory inventory) {
         int explorerLevel = getExplorerLevel();
 
-        // 바이옴 캡슐 목록
-        Object[][] capsules = {
-                { "PLAINS", "평원 캡슐", Material.LIME_DYE, 100, 10 },
-                { "FOREST", "숲 캡슐", Material.GREEN_DYE, 150, 20 },
-                { "DESERT", "사막 캡슐", Material.YELLOW_DYE, 200, 25 },
-                { "JUNGLE", "정글 캡슐", Material.ORANGE_DYE, 300, 30 },
-                { "BADLANDS", "메사 캡슐", Material.RED_DYE, 500, 40 },
-                { "MUSHROOM_FIELDS", "버섯섬 캡슐", Material.PURPLE_DYE, 1000, 50 },
-        };
-
         int slot = 19;
-        for (Object[] cap : capsules) {
-            String biomeId = (String) cap[0];
-            String name = (String) cap[1];
-            Material mat = (Material) cap[2];
-            int price = (int) cap[3];
-            int reqLevel = (int) cap[4];
+        for (BiomeCapsuleInfo info : BIOME_CAPSULE_LIST) {
+            if (slot > 43)
+                break; // 슬롯 초과 방지
 
-            boolean canBuy = explorerLevel >= reqLevel;
+            boolean canBuy = explorerLevel >= info.levelReq;
 
-            ItemStack item = ItemBuilder.of(mat)
-                    .name("§a" + name)
+            ItemStack item = ItemBuilder.of(info.material)
+                    .name("§a" + info.displayName)
                     .lore("")
                     .lore("§7건축 땅에 이 바이옴의 색깔(잔디, 나뭇잎)을")
                     .lore("§7적용할 수 있는 캡슐입니다.")
                     .lore("")
-                    .lore("§7가격: §e" + price + " Dream")
-                    .lore("§7필요 레벨: §f" + reqLevel)
+                    .lore("§7가격: §e" + info.price + " Dream")
+                    .lore("§7필요 레벨: §f" + info.levelReq)
                     .lore("")
                     .lore(canBuy ? "§a[클릭] 구매하기" : "§c레벨 부족")
                     .build();
@@ -208,8 +248,10 @@ public class MapWorkshopProvider extends InventoryProvider {
             inventory.setItem(slot, item);
 
             slot++;
-            if (slot == 25)
+            if (slot == 26)
                 slot = 28;
+            if (slot == 35)
+                slot = 37;
         }
     }
 
@@ -218,20 +260,22 @@ public class MapWorkshopProvider extends InventoryProvider {
      */
     private void renderReportContent(Inventory inventory) {
         // 보고서 납품 안내
-        inventory.setItem(22, ItemBuilder.of(Material.WRITTEN_BOOK)
+        ItemBuilder reportInfo = ItemBuilder.of(Material.WRITTEN_BOOK)
                 .name("§e탐험 보고서 납품")
                 .lore("")
                 .lore("§7새로운 구조물이나 유적을 발견하면")
                 .lore("§7보고서를 작성하여 납품할 수 있습니다.")
                 .lore("")
-                .lore("§a보상:")
-                .lore("  §8- §f마을: §e50 Dream")
-                .lore("  §8- §f던전: §e100 Dream")
-                .lore("  §8- §f네더 요새: §e200 Dream")
-                .lore("  §8- §f엔드 시티: §e500 Dream")
-                .lore("")
-                .lore("§8* 최초 발견자에게만 보상 지급")
-                .build());
+                .lore("§a보상:");
+
+        for (Map.Entry<String, Integer> entry : REPORT_REWARDS.entrySet()) {
+            reportInfo.lore("  §8- §f" + entry.getKey() + ": §e" + entry.getValue() + " Dream");
+        }
+
+        reportInfo.lore("")
+                .lore("§8* 최초 발견자에게만 보상 지급");
+
+        inventory.setItem(22, reportInfo.build());
 
         // 내 보고서 목록 버튼
         inventory.setItem(31, ItemBuilder.of(Material.BOOK)
@@ -358,6 +402,22 @@ public class MapWorkshopProvider extends InventoryProvider {
                 .provider(new MapWorkshopProvider(player, plugin))
                 .build()
                 .open(player);
+    }
+
+    public static class BiomeCapsuleInfo {
+        String displayName;
+        Material material;
+        int price;
+        int levelReq;
+        String biomeId;
+
+        public BiomeCapsuleInfo(String displayName, Material material, int price, int levelReq, String biomeId) {
+            this.displayName = displayName;
+            this.material = material;
+            this.price = price;
+            this.levelReq = levelReq;
+            this.biomeId = biomeId;
+        }
     }
 
     /**

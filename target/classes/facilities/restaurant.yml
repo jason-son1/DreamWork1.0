@@ -1,0 +1,71 @@
+# ============================================
+# 레스토랑 & 주점 설정 (Restaurant & Pub)
+# ============================================
+
+# 요리 레시피 설정
+cooking:
+  hearty_stew:
+    display_name: "&a든든한 스튜"
+    ingredients:
+      - "CARROT:3"
+      - "POTATO:3"
+      - "COOKED_BEEF:1"
+    effects:
+      - "STRENGTH:1:180"      # 힘 I 3분
+      - "SATURATION:0:60"     # 포만감 1분
+    level_required: 30
+
+  golden_feast:
+    display_name: "&6황금빛 만찬"
+    ingredients:
+      - "WHEAT:5"
+      - "GOLDEN_CARROT:2"
+      - "HONEY_BOTTLE:1"
+    effects:
+      - "REGENERATION:1:300"  # 재생 II 5분
+      - "ABSORPTION:1:300"    # 흡수 II 5분
+    level_required: 50
+
+  seafood_platter:
+    display_name: "&b해산물 모둠"
+    ingredients:
+      - "COD:2"
+      - "SALMON:2"
+      - "TROPICAL_FISH:1"
+    effects:
+      - "WATER_BREATHING:0:600" # 수중 호흡 10분
+      - "DOLPHINS_GRACE:0:300"  # 돌고래의 축복 5분
+    level_required: 40
+
+# 양조 레시피 설정
+brewing:
+  strength_tonic:
+    display_name: "&c힘의 강장제"
+    ingredients:
+      - "NETHER_WART:1"
+      - "BLAZE_POWDER:1"
+      - "SUGAR:2"
+    effects:
+      - "STRENGTH:1:180"      # 힘 II 3분
+    level_required: 30
+
+  swiftness_elixir:
+    display_name: "&e신속의 비약"
+    ingredients:
+      - "NETHER_WART:1"
+      - "SUGAR:3"
+      - "RABBIT_FOOT:1"
+    effects:
+      - "SPEED:1:240"         # 신속 II 4분
+    level_required: 30
+
+  miners_brew:
+    display_name: "&7광부의 술"
+    ingredients:
+      - "COAL:2"
+      - "IRON_INGOT:1"
+      - "GLOWSTONE_DUST:1"
+    effects:
+      - "HASTE:1:300"         # 성급함 II 5분
+      - "NIGHT_VISION:0:300"  # 야간 투시 5분
+    level_required: 40
