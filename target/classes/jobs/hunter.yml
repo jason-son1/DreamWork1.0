@@ -159,110 +159,207 @@ triggers:
     money: 1000.0
 
 # ============================================
-# 레벨업 보상
+# 레벨업 보상 (Plan 2.0 기준)
 # ============================================
 rewards:
   level_10:
-    message: "&c[사냥꾼] &f급소 가격(Passive) 기술을 익혔습니다! (치명타 확률 5% 증가)"
+    message: "&c[사냥꾼] &f견습 사냥꾼이 되었습니다! 약점 간파가 해금됩니다."
     stats:
       STR: 3
       DEX: 3
     skill_unlock: "vital_strike"
+    mission_required: "kill_zombie_100"
   
   level_30:
-    message: "&c[사냥꾼] &f사냥 본능(Active)이 깨어났습니다! (몬스터 투시 + 공격력 증가)"
+    message: "&c[사냥꾼] &f숙련 사냥꾼이 되었습니다! 사냥꾼의 지식이 해금됩니다."
     stats:
       STR: 6
       DEX: 6
-    skill_unlock: "hunters_instinct"
+      CON: 3
+    skill_unlock: "slayer_knowledge"
+    unlock: "tracking_skill"  # 추적 스킬 사용 권한
+    mission_required: "kill_elite_10"
 
   level_50:
-    message: "&c[사냥꾼] &f야수 조련(Passive)을 깨달았습니다! (몬스터 테이밍 가능)"
+    message: "&c[사냥꾼] &f전문 사냥꾼이 되었습니다! 사냥용 덫 레시피를 획득합니다."
     stats:
       STR: 10
       DEX: 8
-    skill_unlock: "beast_taming"
+      CON: 5
+    unlock: "bear_trap"  # 사냥용 덫 제작 권한
+    unlock: "monster_lure"  # 몬스터 미끼 제작 권한
+    mission_required: "elite_solo_5"
 
   level_80:
-    message: "&c[사냥꾼] &4학살자&f 칭호를 획득했습니다!"
+    message: "&c[사냥꾼] &4학살자&f 자격을 획득했습니다!"
     stats:
       STR: 15
       DEX: 10
+      CON: 8
     money: 100000
-    skill_unlock: "slayer_aura"
+    unlock: "taming_collar"  # 제압용 목줄 권한
+    mission_required: "alpha_kill_20"
 
   level_100:
     message: "&c[사냥꾼] &4§l전설의 헌터&f 칭호를 획득했습니다!"
     stats:
       STR: 20
       DEX: 15
+      CON: 10
     money: 500000
+    unlock: "legendary_bow"  # 전설 활 '용살자'
     commands:
       - "lp user %player% parent add master_hunter"
+    mission_required: "bounty_complete_100"
 
 # ============================================
-# 스킬 목록 (Plan 기반)
+# 스킬 목록 (Plan 2.0 기준)
 # ============================================
 skills:
-  # [패시브] 급소 가격 (Vital Strike)
+  # [패시브] 약점 간파 (Vital Strike)
+  # - 공격 시 치명타 확률 및 데미지 증가
+  # - 레벨에 따라 효과 강화
   vital_strike:
-    name: "급소 가격"
+    name: "약점 간파"
     type: PASSIVE
     unlock_level: 10
-    description: "공격 시 일정 확률로 치명타 발동 (1.5배 데미지)"
+    description: "공격 시 치명타가 발동할 확률이 증가합니다."
     scaling:
-      "1-30":
+      "10-29":
         crit_chance: 0.10        # 10% 확률
         crit_damage: 1.5         # 1.5배 데미지
-      "31-70":
-        crit_chance: 0.20        # 20% 확률
-        crit_damage: 1.8         # 1.8배 데미지
-      "71-100":
-        crit_chance: 0.30        # 30% 확률
-        crit_damage: 2.0         # 2배 데미지
-        speed_boost_on_crit: 1   # 적중 시 1초 이속 증가
+      "30-49":
+        crit_chance: 0.15
+        crit_damage: 1.7
+      "50-69":
+        crit_chance: 0.20
+        crit_damage: 1.9
+      "70-89":
+        crit_chance: 0.25
+        crit_damage: 2.0
+      "90+":
+        crit_chance: 0.30
+        crit_damage: 2.5
+        speed_boost_on_crit: true  # 치명타 시 1초 이속 증가
 
-  # [액티브] 사냥 본능 (Hunter's Instinct)
-  hunters_instinct:
-    name: "사냥 본능"
+  # [패시브] 사냥꾼의 지식 (Slayer's Knowledge)
+  # - 몬스터 처치 수에 따라 해당 몹에게 보너스 획득
+  # - 도감 시스템과 연동
+  slayer_knowledge:
+    name: "사냥꾼의 지식"
+    type: PASSIVE
+    unlock_level: 30
+    description: "몬스터를 많이 처치할수록 해당 몹에게 강해집니다."
+    # 도감 레벨 설정 (slayer_knowledge 섹션에서 상세 정의)
+
+  # [액티브] 추적 (Tracking)
+  # - 특정 몬스터의 위치를 감지
+  tracking:
+    name: "추적"
     type: ACTIVE
     unlock_level: 30
-    cooldown: 300               # 5분 (300초)
-    mana_cost: 40
-    duration: 20                # 20초
-    description: "20초간 주변 30블록 몬스터 발광 + 공격력 20% 증가"
-    range: 30
-    effects:
-      glowing: true
-      damage_boost: 0.20
-      speed_boost: 0.10
+    cooldown: 60                 # 1분 재사용 대기
+    mana_cost: 20
+    duration_seconds: 30         # 30초간 발광 효과
+    range: 50                    # 50블록 범위
+    description: "주변 몬스터에게 발광 효과를 부여하여 추적합니다."
 
-  # [패시브] 야수 조련 (Beast Taming)
-  beast_taming:
-    name: "야수 조련"
-    type: PASSIVE
+  # [아이템] 사냥용 덫 (Bear Trap)
+  # - 설치 시 몬스터 둔화/고정
+  bear_trap:
+    name: "사냥용 덫"
+    type: ITEM_ACTIVE
     unlock_level: 50
-    description: "체력 20% 이하 몬스터에게 '제압용 목줄' 사용 시 펫으로 영입 가능"
+    description: "설치 시 밟은 몬스터를 3초간 속박합니다."
+    item_id: "bear_trap"
+    duration_seconds: 3          # 3초 속박
+    damage: 5                    # 5 피해
+    cooldown: 30                 # 30초 재사용
+    
+  # [아이템] 몬스터 미끼 (Monster Lure)
+  # - 사용 시 특정 몬스터 유인
+  monster_lure:
+    name: "몬스터 미끼"
+    type: ITEM_ACTIVE
+    unlock_level: 50
+    description: "사용 시 주변 몬스터들을 유인합니다."
+    item_id: "monster_lure"
+    range: 30                    # 30블록 범위
+    duration_seconds: 10         # 10초간 유인
+    
+  # [아이템] 제압용 목줄 (Taming Collar)
+  # - 체력 낮은 몬스터를 펫으로 테이밍
+  taming_collar:
+    name: "제압용 목줄"
+    type: ITEM_ACTIVE
+    unlock_level: 80
+    description: "체력 20% 이하 몬스터를 펫으로 포획합니다."
+    item_id: "taming_collar"
     health_threshold: 0.20
-    tamable_mobs:
-      - SPIDER
-      - CAVE_SPIDER
-      - POLAR_BEAR
-      - FOX
-      - WOLF
-      - ZOMBIE       # 특수
-      - SKELETON     # 특수
     success_base_chance: 0.30
     success_per_level: 0.005
 
-  # [패시브] 학살자 오라
-  slayer_aura:
-    name: "학살자 오라"
-    type: PASSIVE
-    unlock_level: 80
-    description: "체력 30% 이하인 적에게 주는 데미지 20% 증가"
-    low_health_threshold: 0.30
-    damage_boost: 0.20
+# ============================================
+# 무기 진화 시스템 (Plan 2.0 신규)
+# ============================================
+weapon_evolution:
+  enabled: true
+  
+  # 활 진화
+  bow_tiers:
+    apprentice:
+      name: "&7수습생의 활"
+      level_required: 10
+      base_material: BOW
+      bonuses:
+        damage_bonus: 0.05
+      enchantments:
+        - POWER:1
+      pdc_data:
+        tier: 1
+    hunter:
+      name: "&e사냥꾼의 활"
+      level_required: 30
+      base_material: BOW
+      bonuses:
+        damage_bonus: 0.10
+        crit_chance_bonus: 0.05
+      enchantments:
+        - POWER:2
+        - INFINITY:1
+      pdc_data:
+        tier: 2
+    artisan:
+      name: "&b장인의 활"
+      level_required: 50
+      base_material: BOW
+      bonuses:
+        damage_bonus: 0.15
+        crit_chance_bonus: 0.10
+        arrow_speed: 1.2
+      enchantments:
+        - POWER:4
+        - INFINITY:1
+        - FLAME:1
+      pdc_data:
+        tier: 3
+    legendary:
+      name: "&6용살자"
+      level_required: 100
+      base_material: BOW
+      mission_required: "bounty_complete_100"
+      bonuses:
+        damage_bonus: 0.30
+        crit_chance_bonus: 0.20
+        armor_penetration: 0.25
+        boss_damage: 0.50
+      enchantments:
+        - POWER:5
+        - INFINITY:1
+        - FLAME:1
+        - PUNCH:2
+      pdc_data:
+        tier: 4
 
 # ============================================
 # 슬레이어 도감 시스템 (Plan: Slayer's Knowledge)

@@ -34,6 +34,22 @@ commands:
     description: 마을 시스템 명령어
     aliases: [마을, t]
     permission: dreamwork.use
+  forge:
+    description: 대장간 (광물 감정, 합금 제작, 장비 수리)
+    aliases: [대장간]
+    permission: dreamwork.use
+  restaurant:
+    description: 레스토랑 (버프 음식 조리, 양조)
+    aliases: [레스토랑]
+    permission: dreamwork.use
+  aquarium:
+    description: 아쿠아리움 (물고기 납품)
+    aliases: [아쿠아리움, 수족관]
+    permission: dreamwork.use
+  mapworkshop:
+    description: 지도 제작소 (좌표 스크롤 거래, 바이옴 캡슐)
+    aliases: [지도제작소, map]
+    permission: dreamwork.use
 
 # 퍼미션 정의
 permissions:

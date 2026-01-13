@@ -163,140 +163,182 @@ triggers:
     money: 100.0
 
 # ============================================
-# 레벨업 보상
+# 레벨업 보상 (Plan 2.0 기준)
 # ============================================
 rewards:
   level_10:
-    message: "&e[광부] &f단단한 피부(Passive)가 해금되었습니다! (받는 물리 데미지 5% 감소)"
+    message: "&e[광부] &f견습 광부가 되었습니다! 광맥 탐지(Lv.1)를 사용할 수 있습니다."
     stats:
       CON: 5
       STR: 2
-    skill_unlock: "tough_skin"
+    skill_unlock: "ore_radar"
+    mission_required: "mine_coal_500"
 
   level_30:
-    message: "&e[광부] &f슈퍼 히트(Active)를 배웠습니다! (광물 즉시 제련)"
+    message: "&e[광부] &f숙련 광부가 되었습니다! 지하 적응 능력이 해금됩니다."
     stats:
       CON: 10
       STR: 5
-    skill_unlock: "superheat"
+    skill_unlock: "cave_adaptation"
+    unlock: "alloy_crafting"  # 합금 제작 권한
+    mission_required: "deliver_iron_1000_gold_300"
 
   level_50:
-    message: "&e[광부] &f광맥 발견(Passive) 능력을 깨달았습니다!"
+    message: "&e[광부] &f전문 광부가 되었습니다! 광맥 탐지(Max)가 해금됩니다."
     stats:
       CON: 15
       STR: 8
-    skill_unlock: "vein_miner"
+    skill_upgrade: "ore_radar_max"
+    unlock: "artisan_pickaxe"  # 장인의 곡괭이 레시피
+    mission_required: "identify_ore_50"
 
   level_80:
-    message: "&e[광부] &6전설의 광부&f 칭호를 획득했습니다!"
+    message: "&e[광부] &6대장장이&f 자격을 획득했습니다!"
     stats:
       CON: 20
       STR: 10
     money: 100000
-    skill_unlock: "gem_detector"
+    unlock: "forge_master"  # 타 유저 장비 수리/강화 권한
+    mission_required: "craft_alloy_100"
 
   level_100:
-    message: "&e[광부] &c마스터 광부&f 칭호를 획득했습니다!"
+    message: "&e[광부] &c전설의 광부&f 칭호를 획득했습니다!"
     stats:
       CON: 30
       STR: 15
     money: 500000
+    unlock: "legendary_pickaxe"  # 전설 곡괭이 '대지의 심장'
     commands:
       - "lp user %player% parent add master_miner"
+    mission_required: "find_dreamstone"
 
 # ============================================
-# 스킬 목록 (Plan 기반)
+# 스킬 목록 (Plan 2.0 기준)
 # ============================================
 skills:
-  # [패시브] 단단한 피부
-  tough_skin:
-    name: "단단한 피부"
-    type: PASSIVE
-    unlock_level: 10
-    description: "물리 데미지를 5% 감소시킵니다."
-    damage_reduction: 0.05
-  
-  # [액티브] 슈퍼 히트 (쿨타임 5분)
-  superheat:
-    name: "슈퍼 히트"
+  # [액티브] 광맥 탐지 (Ore Radar)
+  # - 광부 전용 곡괭이 우클릭으로 발동
+  # - 반경 N블록 내 광물 종류와 수량을 채팅으로 출력
+  ore_radar:
+    name: "광맥 탐지"
     type: ACTIVE
-    unlock_level: 30
-    cooldown: 300      # 5분 (300초)
-    mana_cost: 30
-    duration: 30       # 30초
-    description: "30초간 채광한 광물을 즉시 제련 상태로 획득 + 성급함II + 화염저항"
-    effects:
-      auto_smelt: true
-      haste_level: 2
-      fire_resistance: true
-  
-  # [패시브] 광맥 감지 (VeinMiner)
-  vein_miner:
-    name: "광맥 감지"
-    type: PASSIVE
-    unlock_level: 50
-    description: "Shift+채굴 시 동일 광물 연쇄 파괴"
+    unlock_level: 10
+    description: "반경 내 광물의 종류와 매장량을 파악합니다."
+    trigger: RIGHT_CLICK_WITH_PICKAXE
     # 레벨별 스케일링
     scaling:
-      "1-20":
-        chance: 0.10        # 10% 확률
-        max_blocks: 3       # 최대 3개
-      "21-60":
-        chance: 0.30        # 30% 확률
-        max_blocks: 9       # 최대 9개 (3x3)
-      "61-100":
-        chance: 0.50        # 50% 확률
-        max_blocks: 15      # 최대 15개
-        durability_reduction: 0.20  # 내구도 소모 20% 감소
-  
-  # [패시브] 보석 탐지
-  gem_detector:
-    name: "보석 탐지"
+      "1-9":
+        radius: 10
+        cooldown: 60
+        info_level: BASIC       # "철이 근처에 있습니다" (유무만)
+        detectable: [COAL_ORE, IRON_ORE]
+      "10-29":
+        radius: 20
+        cooldown: 45
+        info_level: APPROXIMATE  # "철이 소량, 금이 다량 감지됨"
+        detectable: [COAL_ORE, IRON_ORE, GOLD_ORE, REDSTONE_ORE, LAPIS_ORE]
+      "30-49":
+        radius: 30
+        cooldown: 30
+        info_level: PRECISE      # "북동쪽에 다이아몬드 3개 매장됨"
+        detectable: [COAL_ORE, IRON_ORE, GOLD_ORE, REDSTONE_ORE, LAPIS_ORE, DIAMOND_ORE, EMERALD_ORE]
+        direction_hint: true
+      "50":
+        radius: 30
+        cooldown: 15
+        info_level: PRECISE
+        detectable: [ALL]        # 드림스톤/미지의 광석 포함
+        direction_hint: true
+        glowing_effect: 5        # 5초 발광 효과
+
+  # [패시브] 지하 적응 (Cave Adaptation)
+  # - Y좌표 0 이하(Deepslate층) 또는 네더 월드에서 자동 발동
+  cave_adaptation:
+    name: "지하 적응"
     type: PASSIVE
-    unlock_level: 80
-    description: "돌 채광 시 0.1% 확률로 랜덤 보석을 드롭합니다."
-    drop_chance: 0.001
+    unlock_level: 30
+    description: "깊은 지하에서 생존력이 향상됩니다."
+    condition:
+      y_below: 0
+      or_world: "world_nether"
+    # 레벨별 효과
+    scaling:
+      "10-29":
+        fall_damage_reduction: 0.10   # 낙하 피해 10% 감소
+      "30-49":
+        fall_damage_reduction: 0.20
+        haste_level: 1                # 성급함 I 상시
+        lava_damage_reduction: 0.10   # 용암 피해 10% 감소
+      "50+":
+        fall_damage_reduction: 0.30
+        haste_level: 2                # 성급함 II 상시
+        lava_immunity_trigger:
+          duration: 10                # 화염 저항 10초
+          cooldown: 300               # 5분 쿨타임
+
+  # [패시브] 광부의 몰입 (Miner's Trance)
+  # - 한 청크에서 지속적으로 채굴할 때 단계별 버프 적용
+  miners_trance:
+    name: "광부의 몰입"
+    type: PASSIVE
+    unlock_level: 1   # 광부면 자동 적용
+    description: "한 지역에서 오래 채굴할수록 보너스가 쌓입니다."
+    # 청크 이탈 또는 5분 비활동 시 초기화
+    reset_on_chunk_change: true
+    reset_on_idle_seconds: 300
+    stages:
+      stage_1:
+        required_minutes: 10
+        exp_multiplier: 1.10           # 경험치 +10%
+        actionbar_message: "&7몰입 중..."
+      stage_2:
+        required_minutes: 20
+        exp_multiplier: 1.15
+        fortune_bonus: 0.5             # Fortune +0.5 효과
+        particle: ENCHANTMENT_TABLE
+        actionbar_message: "&e깊은 몰입 중..."
+      stage_3:
+        required_minutes: 30
+        exp_multiplier: 1.25
+        fortune_bonus: 1.0
+        rare_drop_multiplier: 2.0      # 미지의 광석/드림스톤 2배
+        particle: TOTEM
+        glowing: true
+        actionbar_message: "&6완벽한 몰입!"
 
 # ============================================
-# 채굴 콤보 시스템 설정 (Plan: 채굴 리듬)
+# 광부의 몰입 시스템 (콤보 시스템 대체)
 # ============================================
-mining_combo:
+miners_trance_system:
   enabled: true
-  timeout_ms: 5000      # 5초 이내 채굴 유지
-  max_combo: 100
-  # 콤보 보상
-  rewards:
-    30:
-      speed_bonus: 0.10   # 이동속도 +10%
-    50:
-      rare_drop_multiplier: 1.5  # 희귀 드롭 1.5배
-    100:
-      exp_multiplier: 2.0  # 경험치 2배
-      particle_effect: "TOTEM"
-
+  check_interval_ticks: 20       # 1초마다 체크
+  chunk_tracking: true           # 청크 단위 추적
+  min_breaks_per_minute: 5       # 분당 최소 5회 채굴해야 진행
+  
 # ============================================
-# 특수 드롭 설정
+# 특수 드롭 설정 (Plan 2.0: 몰입 단계 연동)
 # ============================================
 special_drops:
-  # 드림 스톤 (Plan: 0.1% 확률)
+  # 드림 스톤 (Plan: 극악의 확률, 몰입 3단계에서 2배)
   dream_stone:
     enabled: true
-    base_chance: 0.001       # 0.1%
-    level_bonus: 0.00001     # 레벨당 +0.001%
+    base_chance: 0.001             # 0.1%
+    level_bonus: 0.00001           # 레벨당 +0.001%
+    trance_multiplier: true        # 몰입 단계 보너스 적용
     trigger_blocks:
-      - STONE
-      - DEEPSLATE
-      - COAL_ORE
-      - IRON_ORE
-      - GOLD_ORE
       - DIAMOND_ORE
+      - DEEPSLATE_DIAMOND_ORE
+      - EMERALD_ORE
+      - DEEPSLATE_EMERALD_ORE
       - ANCIENT_DEBRIS
+    broadcast_message: "&6✨ %player%님이 전설의 드림스톤을 발견했습니다!"
       
-  # 미확인 광물 (Plan: 채굴 시 낮은 확률)
+  # 미확인 광물 (Plan: 대장간에서 감정)
   unidentified_ore:
     enabled: true
-    base_chance: 0.001       # 0.1%
-    level_bonus: 0.0001      # 레벨당 +0.01%
+    base_chance: 0.05              # 5%
+    level_bonus: 0.001             # 레벨당 +0.1%
+    trance_multiplier: true
     trigger_blocks:
       - COAL_ORE
       - DEEPSLATE_COAL_ORE
@@ -311,3 +353,95 @@ special_drops:
       - EMERALD_ORE
       - DEEPSLATE_EMERALD_ORE
       - ANCIENT_DEBRIS
+    # 감정 결과 테이블
+    identification_table:
+      - result: STONE
+        weight: 40
+        name: "&7그냥 돌덩이"
+      - result: GOLD_INGOT
+        weight: 25
+        name: "&6금괴"
+      - result: DIAMOND
+        weight: 15
+        name: "&b다이아몬드"
+      - result: EMERALD
+        weight: 10
+        name: "&a에메랄드"
+      - result: NETHERITE_SCRAP
+        weight: 5
+        name: "&4네더라이트 파편"
+      - result: FOSSIL
+        weight: 5
+        name: "&e고대 화석"
+        custom_item: true
+
+# ============================================
+# 곡괭이 진화 시스템 (Plan 2.0 신규)
+# ============================================
+pickaxe_evolution:
+  enabled: true
+  tiers:
+    apprentice:
+      name: "&7수습생의 곡괭이"
+      level_required: 10
+      base_material: IRON_PICKAXE
+      bonuses:
+        durability_multiplier: 1.5
+      pdc_data:
+        tier: 1
+    explorer:
+      name: "&e개척자의 곡괭이"
+      level_required: 30
+      base_material: DIAMOND_PICKAXE
+      bonuses:
+        mining_speed: 1.1
+        ore_radar_enabled: true     # 광맥 탐지 Lv.2 사용 가능
+      pdc_data:
+        tier: 2
+    artisan:
+      name: "&b장인의 곡괭이"
+      level_required: 50
+      base_material: DIAMOND_PICKAXE
+      bonuses:
+        rare_drop_bonus: 0.15       # 희귀 드롭률 +15%
+        repairable: true            # 대장간에서 수리 가능
+      pdc_data:
+        tier: 3
+    legendary:
+      name: "&6대지의 심장"
+      level_required: 100
+      base_material: NETHERITE_PICKAXE
+      mission_required: "find_dreamstone"
+      bonuses:
+        lava_break: true            # 용암을 캐면 흑요석으로 변환
+        all_bonuses: true
+      pdc_data:
+        tier: 4
+
+# ============================================
+# 합금 시스템 (Plan 2.0 신규)
+# ============================================
+alloys:
+  enabled: true
+  location_required: "forge"        # 대장간에서만 제작 가능
+  recipes:
+    reinforced_steel:
+      name: "&a강화된 강철"
+      description: "건축가의 보호 구역 설정에 사용됩니다."
+      ingredients:
+        IRON_INGOT: 10
+        COPPER_INGOT: 10
+        GOLD_INGOT: 5
+      result_amount: 1
+      level_required: 30
+    dreamwork_alloy:
+      name: "&5드림워크 합금"
+      description: "전설 곡괭이 제작에 필요합니다."
+      ingredients:
+        IRON_INGOT: 20
+        GOLD_INGOT: 10
+        NETHERITE_SCRAP: 2
+        CUSTOM_DREAM_STONE: 1
+      result_amount: 1
+      level_required: 50
+

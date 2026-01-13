@@ -75,7 +75,11 @@ public class SkillManager extends Manager {
      * 기본 스킬을 등록합니다.
      */
     private void registerDefaultSkills() {
-        // 광부 스킬
+        // 광부 스킬 (Plan 2.0)
+        registerSkill(new com.dreamwork.core.skill.skills.OreRadar(plugin)); // 광맥 탐지
+        registerSkill(new com.dreamwork.core.skill.skills.CaveAdaptation(plugin)); // 지하 적응
+
+        // 광부 스킬 (기존 - 호환성 유지)
         registerSkill(new MinerBlast(plugin));
         registerSkill(new SuperHeat(plugin));
         registerSkill(new com.dreamwork.core.skill.skills.ToughSkin(plugin));

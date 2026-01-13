@@ -129,41 +129,46 @@ triggers:
     money: 15.0
 
 # ============================================
-# 레벨업 보상
+# 레벨업 보상 (Plan 2.0 기준)
 # ============================================
 rewards:
   level_10:
-    message: "&a[농부] &f녹색 손길(Passive)을 얻었습니다! (자동 재파종)"
+    message: "&a[농부] &f견습 농부가 되었습니다! 녹색 손길이 해금됩니다."
     stats:
       CON: 5
       INT: 2
       LUCK: 3
     skill_unlock: "green_thumb"
+    mission_required: "harvest_wheat_500"
   
   level_30:
-    message: "&a[농부] &f풍년의 춤(Active)을 기원합니다! (30초간 수확량 2배)"
+    message: "&a[농부] &f숙련 농부가 되었습니다! 대지의 기운이 해금됩니다."
     stats:
       CON: 10
       INT: 5
       LUCK: 5
-    skill_unlock: "dance_of_abundance"
+    skill_unlock: "growth_aura"
+    unlock: "cooking_station"  # 요리대 사용 권한
+    mission_required: "deliver_crop_1000"
 
   level_50:
-    message: "&a[농부] &f비료 뿌리기(Active)를 배웠습니다! (주변 작물 성장 촉진)"
+    message: "&a[농부] &f전문 농부가 되었습니다! 풍요의 뿔피리 레시피를 획득합니다."
     stats:
       CON: 15
       INT: 8
       LUCK: 8
-    skill_unlock: "fertilizer"
+    unlock: "horn_of_plenty"  # 뿔피리 제작 레시피
+    mission_required: "golden_harvest_10"
 
   level_80:
-    message: "&a[농부] &6대지주&f 칭호를 획득했습니다!"
+    message: "&a[농부] &6대지주&f 자격을 획득했습니다!"
     stats:
       CON: 20
       INT: 10
       LUCK: 10
     money: 100000
-    skill_unlock: "golden_harvest"
+    unlock: "restaurant_owner"  # 레스토랑 운영 권한
+    mission_required: "buff_food_100"
 
   level_100:
     message: "&a[농부] &c마스터 농부&f 칭호를 획득했습니다!"
@@ -172,65 +177,156 @@ rewards:
       INT: 15
       LUCK: 15
     money: 500000
+    unlock: "legendary_hoe"  # 전설 호미 '대지의 축복'
     commands:
       - "lp user %player% parent add master_farmer"
+    mission_required: "cook_legendary_dish"
 
 # ============================================
-# 스킬 목록 (Plan 기반)
+# 스킬 목록 (Plan 2.0 기준)
 # ============================================
 skills:
   # [패시브] 녹색 손길 (Green Thumb)
+  # - 완전히 자란 작물 수확 시 자동 재파종
+  # - 인벤토리에서 씨앗 차감
   green_thumb:
     name: "녹색 손길"
     type: PASSIVE
     unlock_level: 10
-    description: "수확과 동시에 자동 재파종 + 주변 5칸 성장 속도 20% 증가"
+    description: "완전히 자란 작물을 수확할 때 자동으로 재파종합니다."
     # 레벨별 스케일링
     scaling:
-      "1-30":
+      "10-29":
         replant_chance: 0.50      # 50% 재파종 확률
-        quality_boost: 0          # 1성 작물
-      "31-70":
+        seed_consume: true         # 씨앗 소모
+      "30-49":
+        replant_chance: 0.75      # 75% 재파종
+        seed_consume: true
+      "50-69":
         replant_chance: 1.00      # 100% 재파종
-        quality_boost: 1          # 2성 확률 증가
-      "71-100":
+        seed_consume: true
+      "70+":
         replant_chance: 1.00
-        quality_boost: 2          # 3성 확률 증가
-        auto_fertilize: true      # 자동 비료 효과
+        seed_consume: false        # 씨앗 무소모 (행운에서 얻음)
+        quality_boost: 0.10        # 2성 확률 +10%
 
-  # [액티브] 풍년의 춤 (Dance of Abundance)
-  dance_of_abundance:
-    name: "풍년의 춤"
-    type: ACTIVE
-    unlock_level: 30
-    cooldown: 600               # 10분 (600초)
-    mana_cost: 50
-    description: "주변 15x15 범위 작물 2~3단계 성장 + 가축 번식 가능 상태"
-    range: 15
-    growth_stages: 2
-    enable_breeding: true
-
-  # [액티브] 비료 뿌리기
-  fertilizer:
-    name: "비료 뿌리기"
-    type: ACTIVE
-    unlock_level: 50
-    cooldown: 60
-    mana_cost: 30
-    description: "바라보는 블록 주변 5x5 범위의 작물을 즉시 성장시킵니다."
-    range: 5
-    instant_grow: true
-
-  # [패시브] 황금 수확
-  golden_harvest:
-    name: "황금 수확"
+  # [패시브] 대지의 기운 (Growth Aura)
+  # - 농부 주변 반경 N블록 내 작물이 천천히 성장
+  # - 레벨에 따라 반경 및 성장 속도 증가
+  growth_aura:
+    name: "대지의 기운"
     type: PASSIVE
-    unlock_level: 80
-    description: "작물 수확 시 0.1% 확률로 황금 씨앗/황금 사과가 드롭됩니다."
-    drop_chance: 0.001
-    possible_drops:
-      - "golden_seed"
-      - "GOLDEN_APPLE"
+    unlock_level: 30
+    description: "농부 근처의 작물이 더 빠르게 성장합니다."
+    # 매 10~20초마다 주변 작물 한 단계 성장 확률
+    check_interval_ticks: 200     # 10초마다 체크
+    scaling:
+      "30-49":
+        radius: 3
+        growth_chance: 0.10       # 10% 성장 확률
+      "50-69":
+        radius: 5
+        growth_chance: 0.15
+      "70-89":
+        radius: 7
+        growth_chance: 0.20
+      "90+":
+        radius: 10
+        growth_chance: 0.25
+        quality_boost: 0.05       # 3성 확률 +5%
+
+  # [아이템] 풍요의 뿔피리 (Horn of Plenty)
+  # - 아이템 사용형 스킬 (농부 전용 호미로 사용)
+  # - 범위 내 작물 즉시 성장
+  horn_of_plenty:
+    name: "풍요의 뿔피리"
+    type: ITEM_ACTIVE
+    unlock_level: 50
+    description: "아이템 사용 시 주변 작물을 즉시 성장시킵니다."
+    # 아이템 설정은 items.yml에서 정의
+    item_id: "horn_of_plenty"
+    cooldown: 180                  # 3분 재사용 대기
+    radius: 7
+    instant_grow: true
+    quality_boost_on_use: true     # 사용 시 품질 상승 확률 증가
+
+# ============================================
+# 호미 진화 시스템 (Plan 2.0 신규)
+# ============================================
+hoe_evolution:
+  enabled: true
+  tiers:
+    apprentice:
+      name: "&7수습생의 호미"
+      level_required: 10
+      base_material: STONE_HOE
+      bonuses:
+        replant_speed: 1.2
+      pdc_data:
+        tier: 1
+    farmer:
+      name: "&e농부의 호미"
+      level_required: 30
+      base_material: IRON_HOE
+      bonuses:
+        area_harvest: 3           # 3x3 영역 수확
+        replant_speed: 1.4
+      pdc_data:
+        tier: 2
+    artisan:
+      name: "&b장인의 호미"
+      level_required: 50
+      base_material: DIAMOND_HOE
+      bonuses:
+        area_harvest: 5           # 5x5 영역 수확
+        auto_replant: true
+        quality_boost: 0.10
+      pdc_data:
+        tier: 3
+    legendary:
+      name: "&6대지의 축복"
+      level_required: 100
+      base_material: NETHERITE_HOE
+      mission_required: "cook_legendary_dish"
+      bonuses:
+        area_harvest: 7           # 7x7 영역 수확
+        infinite_durability: true
+        all_bonuses: true
+      pdc_data:
+        tier: 4
+
+# ============================================
+# 버프 요리 시스템 (Plan 2.0 신규)
+# ============================================
+buff_cooking:
+  enabled: true
+  location_required: "kitchen"     # 주방에서만 제작 가능
+  recipes:
+    hearty_stew:
+      name: "&a든든한 스튜"
+      description: "포만감 회복 + 힘 I (3분)"
+      ingredients:
+        THREE_STAR_CARROT: 3
+        THREE_STAR_POTATO: 3
+        COOKED_BEEF: 1
+      effects:
+        - "INCREASE_DAMAGE:1:180"
+        - "SATURATION:2:60"
+      level_required: 30
+    
+    golden_feast:
+      name: "&6황금빛 만찬"
+      description: "모든 스탯 +5%, 재생 II (5분)"
+      ingredients:
+        THREE_STAR_WHEAT: 5
+        GOLDEN_CARROT: 2
+        HONEY_BOTTLE: 1
+        CUSTOM_GOLDEN_SEED: 1
+      effects:
+        - "REGENERATION:2:300"
+        - "ABSORPTION:2:300"
+        - "ALL_STATS_BOOST:0.05:300"
+      level_required: 50
 
 # ============================================
 # 작물 등급 시스템 (Plan: Crop Quality)

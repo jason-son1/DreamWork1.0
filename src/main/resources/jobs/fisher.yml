@@ -72,41 +72,47 @@ custom_fish:
     money: 1000.0
 
 # ============================================
-# 레벨업 보상
+# 레벨업 보상 (Plan 2.0 기준)
 # ============================================
 rewards:
   level_10:
-    message: "&b[어부] &f강태공(Passive)의 경지에 들었습니다! (낚시 대기 시간 감소)"
+    message: "&b[어부] &f견습 어부가 되었습니다! 예민한 감각이 해금됩니다."
     stats:
       INT: 3
       DEX: 3
       LUCK: 5
-    skill_unlock: "master_angler"
+    skill_unlock: "sensitivity"
+    mission_required: "catch_fish_100"
   
   level_30:
-    message: "&b[어부] &f그물 던지기(Active)를 배웠습니다! (다중 물고기 포획)"
+    message: "&b[어부] &f숙련 어부가 되었습니다! 어종 지식이 해금됩니다."
     stats:
       INT: 6
       DEX: 5
       LUCK: 8
-    skill_unlock: "cast_net"
+    skill_unlock: "fish_knowledge"
+    unlock: "fish_tank"  # 생선 수조 사용 권한
+    mission_required: "catch_rare_fish_20"
 
   level_50:
-    message: "&b[어부] &f바다의 행운(Passive)이 함께합니다! (보물 확률 증가)"
+    message: "&b[어부] &f전문 어부가 되었습니다! 떡밥 제작 레시피를 획득합니다."
     stats:
       INT: 10
       DEX: 8
       LUCK: 12
-    skill_unlock: "ocean_luck"
+    unlock: "chum_recipe"  # 떡밥 제작 레시피
+    unlock_item: "ruler"   # 자 아이템 (물고기 크기 측정)
+    mission_required: "crown_fish_5"
 
   level_80:
-    message: "&b[어부] &3강태공&f 칭호를 획득했습니다!"
+    message: "&b[어부] &3강태공&f 자격을 획득했습니다!"
     stats:
       INT: 15
       DEX: 10
       LUCK: 15
     money: 100000
-    skill_unlock: "deep_sea_treasure"
+    unlock: "aquarium_delivery"  # 수족관 납품 권한
+    mission_required: "live_fish_delivery_10"
 
   level_100:
     message: "&b[어부] &1심해의 지배자&f 칭호를 획득했습니다!"
@@ -115,58 +121,186 @@ rewards:
       DEX: 15
       LUCK: 20
     money: 500000
+    unlock: "legendary_rod"  # 전설 낚싯대 '해신의 갈고리'
     commands:
       - "lp user %player% parent add master_fisher"
+    mission_required: "catch_legendary_fish"
 
 # ============================================
-# 스킬 목록 (Plan 기반)
+# 스킬 목록 (Plan 2.0 기준)
 # ============================================
 skills:
-  # [패시브] 강태공 (Master Angler)
-  master_angler:
-    name: "강태공"
+  # [패시브] 예민한 감각 (Sensitivity)
+  # - 물고기가 미끼를 무는 대기 시간 감소
+  # - 레벨에 따라 감소량 증가
+  sensitivity:
+    name: "예민한 감각"
     type: PASSIVE
     unlock_level: 10
-    description: "낚시 대기 시간 감소 + 쓰레기 낚을 확률 감소"
+    description: "물고기가 미끼를 더 빨리 물도록 합니다."
     scaling:
-      "1-30":
-        wait_time_reduction: 0.10    # 10% 감소
-        junk_reduction: 0.30         # 쓰레기 30% 감소
-      "31-70":
-        wait_time_reduction: 0.30    # 30% 감소
-        junk_reduction: 0.70         # 쓰레기 70% 감소
-      "71-100":
-        wait_time_reduction: 0.50    # 50% 감소
-        junk_reduction: 1.00         # 쓰레기 0%
-        treasure_multiplier: 2.0     # 보물 확률 2배
+      "10-29":
+        wait_reduction_percent: 0.15    # 15% 대기 시간 감소
+      "30-49":
+        wait_reduction_percent: 0.25    # 25% 감소
+      "50-69":
+        wait_reduction_percent: 0.35    # 35% 감소
+      "70-89":
+        wait_reduction_percent: 0.45    # 45% 감소
+      "90+":
+        wait_reduction_percent: 0.50    # 50% 감소 (최대)
+        bite_alert: true                 # 입질 시 사운드 알림
 
-  # [액티브] 그물 던지기 (Cast Net)
-  cast_net:
-    name: "그물 던지기"
-    type: ACTIVE
+  # [패시브] 어종 지식 (Fish Knowledge)
+  # - 낚시 시작 시 해당 바이옴에서 잡을 수 있는 물고기 정보 표시
+  # - 레벨에 따라 정보량 증가
+  fish_knowledge:
+    name: "어종 지식"
+    type: PASSIVE
     unlock_level: 30
-    cooldown: 180                   # 3분 (180초)
-    mana_cost: 40
-    description: "찌 주변 5x5 범위의 물고기 3~5마리를 즉시 포획"
-    range: 5
-    fish_count_min: 3
-    fish_count_max: 5
+    description: "낚시 시 현재 바이옴의 물고기 정보를 표시합니다."
+    scaling:
+      "30-49":
+        info_level: 1                    # 어종 이름만 표시
+      "50-69":
+        info_level: 2                    # 어종 + 기본 시세
+      "70-89":
+        info_level: 3                    # 어종 + 시세 + 월척 기준
+      "90+":
+        info_level: 4                    # 전체 정보 + 예상 확률
+        xp_bonus: 0.10                   # 경험치 +10%
 
-  # [패시브] 바다의 행운
-  ocean_luck:
-    name: "바다의 행운"
-    type: PASSIVE
+  # [아이템] 떡밥 (Chum)
+  # - 물에 던지면 해당 위치에서 좋은 물고기 확률 증가
+  # - 일정 시간 유지 (5분)
+  chum:
+    name: "떡밥"
+    type: ITEM_ACTIVE
     unlock_level: 50
-    description: "낚시 성공 시 10% 확률로 내구도 미소모"
-    durability_save_chance: 0.10
+    description: "물에 던지면 5분간 희귀 물고기 확률이 증가합니다."
+    item_id: "fishing_chum"
+    duration_seconds: 300               # 5분 지속
+    radius: 10                          # 효과 반경 10블록
+    effects:
+      rare_fish_multiplier: 2.0         # 희귀 물고기 2배
+      junk_reduction: 0.50              # 쓰레기 50% 감소
+      treasure_bonus: 0.25              # 보물 확률 +25%
 
-  # [패시브] 심해의 보물
-  deep_sea_treasure:
-    name: "심해의 보물"
-    type: PASSIVE
-    unlock_level: 80
-    description: "낚시 시 낮은 확률로 심해의 상자를 낚습니다."
-    deep_sea_box_chance: 0.005
+# ============================================
+# 낚싯대 진화 시스템 (Plan 2.0 신규)
+# ============================================
+rod_evolution:
+  enabled: true
+  tiers:
+    apprentice:
+      name: "&7수습생의 낚싯대"
+      level_required: 10
+      base_material: FISHING_ROD
+      bonuses:
+        wait_time_reduction: 0.10
+      enchantments:
+        - LURE:1
+      pdc_data:
+        tier: 1
+    fisherman:
+      name: "&e어부의 낚싯대"
+      level_required: 30
+      base_material: FISHING_ROD
+      bonuses:
+        wait_time_reduction: 0.20
+        luck_bonus: 1
+      enchantments:
+        - LURE:2
+        - LUCK_OF_THE_SEA:1
+      pdc_data:
+        tier: 2
+    artisan:
+      name: "&b장인의 낚싯대"
+      level_required: 50
+      base_material: FISHING_ROD
+      bonuses:
+        wait_time_reduction: 0.30
+        luck_bonus: 2
+        durability_save: 0.15
+      enchantments:
+        - LURE:3
+        - LUCK_OF_THE_SEA:2
+        - UNBREAKING:3
+      pdc_data:
+        tier: 3
+    legendary:
+      name: "&6해신의 갈고리"
+      level_required: 100
+      base_material: FISHING_ROD
+      mission_required: "catch_legendary_fish"
+      bonuses:
+        wait_time_reduction: 0.50
+        luck_bonus: 3
+        infinite_durability: true
+        legendary_fish_chance: 0.01
+      enchantments:
+        - LURE:4
+        - LUCK_OF_THE_SEA:3
+        - MENDING:1
+      pdc_data:
+        tier: 4
+
+# ============================================
+# 회(Sashimi) 가공 시스템 (Plan 2.0 신규)
+# ============================================
+sashimi_system:
+  enabled: true
+  location_required: "fishmonger"      # 생선가게에서만 가공 가능
+  recipes:
+    cod_sashimi:
+      input: COD
+      output_name: "&a대구 회"
+      output_count: 2
+      minimum_size_cm: 30               # 30cm 이상만 회 가공 가능
+      effects:
+        - "WATER_BREATHING:1:180"       # 수중 호흡 3분
+      level_required: 30
+    
+    salmon_sashimi:
+      input: SALMON
+      output_name: "&a연어 회"
+      output_count: 3
+      minimum_size_cm: 40
+      effects:
+        - "DOLPHINS_GRACE:1:180"        # 돌고래의 가호 3분
+        - "NIGHT_VISION:1:180"          # 야간 투시 3분
+      level_required: 30
+    
+    pufferfish_sashimi:
+      input: PUFFERFISH
+      output_name: "&c복어 회 (위험!)"
+      output_count: 1
+      minimum_size_cm: 20
+      effects:
+        - "INCREASE_DAMAGE:2:120"       # 힘 II 2분
+        - "POISON:1:30"                 # 독 I 30초 (위험!)
+      level_required: 50
+
+# ============================================
+# 살아있는 물고기 (Live Fish) 시스템 (Plan 2.0 신규)
+# ============================================
+live_fish_system:
+  enabled: true
+  fish_keep_duration_minutes: 30        # 생선통에서 30분간 생존
+  delivery_bonus_multiplier: 2.0        # 수족관 납품 시 2배 보상
+  transportation:
+    fish_bucket:
+      description: "물고기를 살린 채로 운반합니다"
+      capacity: 1
+    fish_keep:
+      name: "&b생선통"
+      description: "물고기를 여러 마리 살려서 운반합니다"
+      unlock_level: 50
+      capacity: 5
+      crafting:
+        - "BUCKET:1"
+        - "OAK_PLANKS:4"
+        - "PRISMARINE_SHARD:2"
 
 # ============================================
 # 바이옴별 어종 시스템 (Plan: Biome Fishing)

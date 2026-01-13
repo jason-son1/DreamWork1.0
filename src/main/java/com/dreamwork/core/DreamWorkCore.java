@@ -84,6 +84,9 @@ public final class DreamWorkCore extends JavaPlugin {
 
     private SetEffectManager setEffectManager;
     private com.dreamwork.core.rank.RankManager rankManager;
+    private com.dreamwork.core.mission.MissionManager missionManager;
+    private com.dreamwork.core.economy.EconomyCirculationService economyCirculationService;
+    private com.dreamwork.core.mission.RankTitleSystem rankTitleSystem;
 
     /** 아이템 팩토리 */
     private ItemFactory itemFactory;
@@ -166,6 +169,12 @@ public final class DreamWorkCore extends JavaPlugin {
             // 명령어 등록
             getCommand("money").setExecutor(new com.dreamwork.core.economy.EconomyCommand(this));
             getCommand("town").setExecutor(new com.dreamwork.core.town.TownCommand(this));
+            getCommand("forge").setExecutor(new com.dreamwork.core.town.ForgeCommand(this));
+            com.dreamwork.core.town.TownFacilityCommand facilityCmd = new com.dreamwork.core.town.TownFacilityCommand(
+                    this);
+            getCommand("restaurant").setExecutor(facilityCmd);
+            getCommand("aquarium").setExecutor(facilityCmd);
+            getCommand("mapworkshop").setExecutor(facilityCmd);
         } else {
             getLogger().warning("Vault를 찾을 수 없습니다. 경제 기능이 비활성화됩니다.");
         }
@@ -326,17 +335,34 @@ public final class DreamWorkCore extends JavaPlugin {
 
         // 농부 시스템
         getServer().getPluginManager().registerEvents(new com.dreamwork.core.job.system.CropQualitySystem(this), this);
+        new com.dreamwork.core.job.system.GrowthAuraSystem(this); // 대지의 기운 패시브
+        getServer().getPluginManager().registerEvents(new com.dreamwork.core.item.custom.HornOfPlentyItem(this), this);
 
         // 어부 시스템
         getServer().getPluginManager().registerEvents(new com.dreamwork.core.job.system.FishMeasurementSystem(this),
                 this);
+        new com.dreamwork.core.job.system.FishingSensitivitySystem(this); // 예민한 감각
+        new com.dreamwork.core.job.system.FishKnowledgeSystem(this); // 어종 지식
+        new com.dreamwork.core.item.custom.ChumItem(this); // 떡밥 아이템
 
         // 탐험가 시스템
         getServer().getPluginManager().registerEvents(new com.dreamwork.core.job.system.AtlasDiscoverySystem(this),
                 this);
+        new com.dreamwork.core.job.system.PathfinderSystem(this); // 험지 주파
+        new com.dreamwork.core.job.system.SixthSenseSystem(this); // 육감
+        new com.dreamwork.core.item.custom.HearthstoneItem(this); // 귀환석
 
         // 사냥꾼 시스템
         getServer().getPluginManager().registerEvents(new com.dreamwork.core.job.system.MobTierSystem(this), this);
+        new com.dreamwork.core.job.system.VitalStrikeSystem(this); // 약점 간파
+        new com.dreamwork.core.item.custom.BearTrapItem(this); // 사냥용 덫
+        new com.dreamwork.core.item.custom.MonsterLureItem(this); // 몬스터 미끼
+
+        // Phase 8: 보완 시스템
+        new com.dreamwork.core.job.system.LiveFishSystem(this); // 살아있는 물고기
+        new com.dreamwork.core.item.custom.FertilizerItems(this); // 기능성 비료
+        rankTitleSystem = new com.dreamwork.core.mission.RankTitleSystem(this); // 랭크 칭호 시스템
+        new com.dreamwork.core.mission.MissionNPCHandler(this); // 미션 NPC 핸들러
 
         // 패시브 스킬 리스너 등록
         getServer().getPluginManager().registerEvents(new MinerVeinSkill(this), this);
@@ -734,5 +760,23 @@ public final class DreamWorkCore extends JavaPlugin {
      */
     public MiningComboSystem getMiningComboSystem() {
         return miningComboSystem;
+    }
+
+    /**
+     * 미션 매니저를 반환합니다.
+     * 
+     * @return MissionManager 인스턴스
+     */
+    public com.dreamwork.core.mission.MissionManager getMissionManager() {
+        return missionManager;
+    }
+
+    /**
+     * 랭크 칭호 시스템을 반환합니다.
+     * 
+     * @return RankTitleSystem 인스턴스
+     */
+    public com.dreamwork.core.mission.RankTitleSystem getRankTitleSystem() {
+        return rankTitleSystem;
     }
 }
